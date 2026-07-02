@@ -1,0 +1,39 @@
+[package]
+name = "okf-http"
+version = "0.3.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+authors = ["Kathrin C. Motzkus"]
+description = "HTTP server for browsing and managing Open Knowledge Format repositories."
+repository = "https://github.com/kathrinmotzkus/open-knowledge-format"
+homepage = "https://github.com/kathrinmotzkus/open-knowledge-format"
+readme = "README.md"
+keywords = ["knowledge", "markdown", "web", "semantic-search"]
+categories = ["web-programming::http-server"]
+
+[[bin]]
+name = "okf-http"
+path = "src/main.rs"
+
+[dependencies]
+argon2 = "0.5"
+axum = "0.8.9"
+axum-server = { version = "0.8", default-features = false, features = ["tls-rustls-no-provider"] }
+getrandom = "0.2"
+okf = { version = "0.3.0", path = "../okf" }
+rcgen = { version = "0.13", features = ["x509-parser"] }
+rpassword = "7"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pemfile = "2"
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+time = "=0.3.41"
+tokio = { version = "1", features = ["fs", "macros", "net", "rt-multi-thread", "signal"] }
+x509-parser = { version = "0.18.1", features = ["verify"] }
+zeroize = "1"
+
+[dev-dependencies]
+tower = "0.5"

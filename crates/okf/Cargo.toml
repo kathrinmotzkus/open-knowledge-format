@@ -1,0 +1,25 @@
+[package]
+name = "okf"
+version = "0.3.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+authors = ["Kathrin C. Motzkus"]
+description = "Core document model and repository API for the Open Knowledge Format."
+repository = "https://github.com/kathrinmotzkus/open-knowledge-format"
+homepage = "https://github.com/kathrinmotzkus/open-knowledge-format"
+readme = "README.md"
+keywords = ["knowledge", "markdown", "frontmatter", "documentation"]
+categories = ["text-processing", "filesystem"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+getrandom = "0.2.17"
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10.9"
+unicode-normalization = "0.1.25"
+toml_dom = "0.3.3"

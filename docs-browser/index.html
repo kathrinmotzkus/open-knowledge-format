@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OKF Knowledge Browser</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./vendor/cytoscape.min.js"></script>
+    <script src="./security.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>OKF Docs</h1>
+          <p>Knowledge browser for configured OKF roots</p>
+          <span id="server-mode" class="server-mode">Checking server mode…</span>
+          <div class="access-panel" aria-live="polite">
+            <span id="access-status">Reading anonymously while access is checked…</span>
+            <div class="access-actions">
+              <button id="access-pair-open" type="button" class="hidden">Pair local editor</button>
+              <button id="access-login-open" type="button" class="hidden">Sign in</button>
+              <button id="access-logout" type="button" class="hidden">Log out</button>
+            </div>
+          </div>
+        </div>
+        <label class="search">
+          <span>Search</span>
+          <input id="search" type="search" placeholder="Find documents" />
+        </label>
+        <nav id="tree" class="tree" aria-label="Documentation tree"></nav>
+      </aside>
+
+      <main class="content">
+        <div class="mode-switch" role="tablist" aria-label="Browser mode">
+          <button id="mode-documents" class="mode-button active" type="button" role="tab" aria-selected="true" aria-controls="documents-panel">Documents</button>
+          <button id="mode-graph" class="mode-button" type="button" role="tab" aria-selected="false" aria-controls="graph-panel">Graph</button>
+          <button id="mode-ai" class="mode-button ai-mode-button" type="button" role="tab" aria-selected="false" aria-controls="ai-panel">OKF AI</button>
+          <button id="mode-roots" class="mode-button" type="button" role="tab" aria-selected="false" aria-controls="roots-panel">Document roots</button>
+        </div>
+
+        <header class="toolbar">
+          <div>
+            <div id="doc-kind" class="pill">Document</div>
+            <h2 id="doc-title">OKF Documents</h2>
+            <p id="doc-path" class="muted">Loading configured document roots…</p>
+          </div>
+          <div class="toolbar-actions">
+            <button id="okf-ai-open" class="primary-action" type="button">Run OKF AI analysis</button>
+            <a id="raw-link" href="#" target="_blank" rel="noopener noreferrer">Open raw</a>
+          </div>
+        </header>
+
+        <section id="frontmatter" class="frontmatter"></section>
+        <section id="documents-panel" role="tabpanel" aria-labelledby="mode-documents">
+          <article id="viewer" class="viewer">
+            <p class="muted">Loading…</p>
+          </article>
+        </section>
+
+        <section id="graph-panel" class="graph-panel hidden" role="tabpanel" aria-labelledby="mode-graph" aria-live="polite">
+          <div class="graph-intro">
+            <p class="muted">
+              Prototype graph view: documents are nodes, internal Markdown references are edges, and frontmatter topics can be shown as semantic hubs.
+            </p>
+          </div>
+          <div class="graph-controls">
+            <label class="graph-check">
+              <input id="graph-show-topics" type="checkbox" checked />
+              <span>Show topics</span>
+            </label>
+            <label class="graph-filter">
+              <span>Topic filter</span>
+              <select id="graph-topic-filter">
+                <option value="">All topics</option>
+              </select>
+            </label>
+            <label class="graph-filter">
+              <span>Kind filter</span>
+              <select id="graph-kind-filter">
+                <option value="">All kinds</option>
+              </select>
+            </label>
+            <div class="graph-actions">
+              <button id="graph-reset-layout" type="button">Reset layout</button>
+              <button id="graph-fit-view" type="button">Fit view</button>
+              <button id="graph-clear-filters" type="button">Clear filters</button>
+              <button id="graph-clear-focus" type="button">Clear focus</button>
+            </div>
+          </div>
+          <div id="graph-status" class="graph-status muted">Preparing graph…</div>
+          <div class="graph-legend" aria-label="Graph legend">
+            <span class="legend-item"><span class="legend-swatch legend-doc"></span>Document</span>
+            <span class="legend-item"><span class="legend-swatch legend-index"></span>Index</span>
+            <span class="legend-item"><span class="legend-swatch legend-plan"></span>Plan</span>
+            <span class="legend-item"><span class="legend-swatch legend-topic"></span>Topic</span>
+            <span class="legend-item"><span class="legend-line legend-link"></span>Document link</span>
+            <span class="legend-item"><span class="legend-line legend-topic-link"></span>Has topic</span>
+            <span class="legend-item"><span class="legend-line legend-ai-link"></span>Accepted AI edge</span>
+            <span class="legend-item"><span class="legend-line legend-canonical-link"></span>Canonical relation</span>
+          </div>
+          <div id="graph-view" class="graph-view"></div>
+        </section>
+
+        <section id="ai-panel" class="ai-panel hidden" role="tabpanel" aria-labelledby="mode-ai" aria-live="polite">
+          <div class="ai-hero">
+            <div>
+              <div class="pill ai-pill">Optional AI layer</div>
+              <h3>OKF AI analysis</h3>
+              <p class="muted">
+                Run explicit Voyage analysis, review AI-suggested edges, and persist every decision in the local OKF SQLite index.
+              </p>
+            </div>
+            <div class="ai-hero-actions">
+              <button id="ai-run-analysis" class="primary-action" type="button">Run analysis</button>
+              <button id="ai-apply-relations" class="primary-action" type="button">Apply accepted relations</button>
+              <button id="ai-save-state" type="button">Refresh durable review</button>
+              <button id="ai-export-state" type="button">Export changes</button>
+            </div>
+          </div>
+
+          <div class="ai-grid">
+            <section class="ai-card">
+              <h4>Editor access</h4>
+              <p class="muted">
+                Reading remains anonymous. Protected actions require either the one-time local-editor code or an HTTPS account with the corresponding role.
+              </p>
+              <div class="ai-access-row">
+                <span id="ai-access-status" class="muted">Checking editor session…</span>
+                <button id="ai-pair-open" type="button" class="hidden">Pair local editor</button>
+              </div>
+              <dl class="ai-stats">
+                <div><dt>Documents</dt><dd id="ai-stat-documents">0</dd></div>
+                <div><dt>Graph edges</dt><dd id="ai-stat-edges">0</dd></div>
+                <div><dt>Suggested edges</dt><dd id="ai-stat-suggestions">0</dd></div>
+                <div><dt>Accepted</dt><dd id="ai-stat-accepted">0</dd></div>
+              </dl>
+              <p id="ai-status" class="ai-status muted">Ready. No analysis has been run in this browser session.</p>
+            </section>
+
+            <section class="ai-card">
+              <h4>Semantic search and evaluation</h4>
+              <label class="ai-search">
+                <span>Search prompt</span>
+                <input id="ai-semantic-search" type="search" placeholder="Describe what you are looking for" />
+                <button id="ai-semantic-search-run" type="button">Run semantic search</button>
+              </label>
+              <div id="ai-search-results" class="ai-search-results muted">Run analysis or enter a prompt to inspect currently loaded documents.</div>
+            </section>
+          </div>
+
+          <section class="ai-card">
+            <div class="ai-review-header">
+              <div>
+                <h4>Suggested graph edges</h4>
+                <p class="muted">Voyage-derived suggestions and review decisions are durable SQLite state. Local metadata prefilters are shown separately and cannot be accepted.</p>
+              </div>
+              <div class="ai-review-actions">
+                <button id="ai-accept-all" type="button">Accept all</button>
+                <button id="ai-deny-all" type="button">Deny all</button>
+              </div>
+            </div>
+            <div id="ai-suggestions" class="ai-suggestions">
+              <p class="muted">No suggestions yet.</p>
+            </div>
+          </section>
+
+          <section class="ai-card">
+            <h4>Durable storage path</h4>
+            <p class="muted">
+              SQLite is the durable review source consumed by the explicit relation-application endpoint. Export is an optional portable review artifact, not hidden browser state.
+            </p>
+            <pre id="ai-export-preview" class="ai-export-preview"><code>No accepted changes saved yet.</code></pre>
+          </section>
+        </section>
+
+        <section id="roots-panel" class="roots-panel hidden" role="tabpanel" aria-labelledby="mode-roots">
+          <div class="root-card">
+            <div>
+              <div class="pill">Protected configuration</div>
+              <h3>Add an OKF document root</h3>
+              <p class="muted">Enter a server-side directory. OKF never provides a general filesystem browser and never admits hidden or unsupported files.</p>
+            </div>
+            <div id="root-overrides" class="root-warning hidden" role="alert"></div>
+            <form id="root-proposal-form" class="root-form">
+              <label class="root-wide"><span>Directory path</span><input id="root-path" type="text" autocomplete="off" required placeholder="/home/user/knowledge" /></label>
+              <label><span>Logical mount (optional)</span><input id="root-mount" type="text" autocomplete="off" placeholder="research" /></label>
+              <label><span>Priority</span><input id="root-priority" type="number" step="1" placeholder="automatic" /></label>
+              <label class="root-check root-wide"><input id="root-watch" type="checkbox" /><span>Check this root for changes automatically</span></label>
+              <div class="root-actions root-wide">
+                <button id="root-preview" class="primary-action" type="submit">Preview root</button>
+                <button id="root-cancel" type="button">Cancel</button>
+              </div>
+            </form>
+            <p id="root-status" class="muted" role="status" aria-live="polite">Pair or sign in, then create a preview.</p>
+          </div>
+
+          <section id="root-review" class="root-card hidden" aria-labelledby="root-review-title">
+            <div class="root-review-heading">
+              <div><h3 id="root-review-title">Review current proposal</h3><p id="root-review-path" class="muted"></p></div>
+              <span id="root-expiry" class="pill"></span>
+            </div>
+            <dl id="root-summary" class="root-summary"></dl>
+            <div id="root-conflicts" class="root-conflicts"></div>
+            <label class="root-filter"><span>Filter the complete proposal tree</span><input id="root-tree-filter" type="search" placeholder="Path, state, or reason" /></label>
+            <div class="root-tree-wrap" tabindex="0" aria-label="Complete root proposal tree">
+              <table class="root-tree"><thead><tr><th scope="col">Path</th><th scope="col">Admission</th><th scope="col">Reason</th><th scope="col">Resource type</th></tr></thead><tbody id="root-tree-body"></tbody></table>
+            </div>
+            <p id="root-tree-count" class="muted"></p>
+            <label class="root-check"><input id="root-reviewed" type="checkbox" /><span>I reviewed this complete proposal, including rejected entries and conflicts.</span></label>
+            <div class="root-actions">
+              <button id="root-register" type="button" disabled>Register read-only</button>
+              <button id="root-register-initialize" class="primary-action" type="button" disabled>Register and initialize OKF</button>
+              <button id="root-review-cancel" type="button">Cancel</button>
+            </div>
+            <p class="root-warning">Initialization is a separate source-writing operation. You will see every proposed file change and must confirm it again.</p>
+          </section>
+
+          <section class="root-card" aria-labelledby="configured-roots-title">
+            <h3 id="configured-roots-title">Browser configuration</h3>
+            <p class="muted">This list comes from <code>~/.config/okf/config.toml</code>. Browser changes never edit <code>.env</code>.</p>
+            <div id="configured-roots" class="configured-roots"><p class="muted">Configuration is available after pairing or sign-in.</p></div>
+          </section>
+
+          <section id="root-change-review" class="root-card hidden" aria-labelledby="root-change-title">
+            <div class="root-review-heading"><div><div class="pill">Pending review</div><h3 id="root-change-title">Detected root changes</h3><p id="root-change-digest" class="muted"></p></div><button id="root-change-close" type="button">Close details</button></div>
+            <p class="muted">Detection is read-only and token-free. Nothing below changes configuration, source files, relations, embeddings, Voyage state, or the accepted baseline.</p>
+            <div id="root-change-list" class="root-change-list"></div>
+            <label class="root-filter"><span>Filter current admission inventory</span><input id="root-change-filter" type="search" placeholder="Path, state, or reason" /></label>
+            <div class="root-tree-wrap" tabindex="0" aria-label="Current admission inventory"><table class="root-tree"><thead><tr><th scope="col">Path</th><th scope="col">Current state</th><th scope="col">Reason</th></tr></thead><tbody id="root-change-inventory"></tbody></table></div>
+            <p id="root-change-count" class="muted"></p>
+            <label class="root-check"><input id="root-change-reviewed" type="checkbox" /><span>I reviewed this exact snapshot and its complete current admission inventory.</span></label>
+            <div class="root-actions"><button id="root-change-accept" class="primary-action" type="button" disabled>Accept snapshot as new baseline</button><button id="root-change-dismiss" type="button" disabled>Dismiss this notice</button></div>
+            <p class="root-warning">Dismissal does not approve files or move the baseline. The same changes can appear again after the next explicit check or server start.</p>
+            <p id="root-change-status" class="muted" role="status" aria-live="polite"></p>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="pairing-dialog" class="pairing-dialog" aria-labelledby="pairing-title">
+      <form id="pairing-form">
+        <div>
+          <div class="pill ai-pill">Local editor</div>
+          <h2 id="pairing-title">Pair this browser</h2>
+          <p class="muted">
+            Enter the one-time code printed in the <code>okf-http</code> terminal. The code is sent only in this protected POST and is never stored by the browser.
+          </p>
+        </div>
+        <label class="pairing-field">
+          <span>Pairing code</span>
+          <input
+            id="pairing-code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="14"
+            pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}"
+            placeholder="0000-0000-0000"
+            required
+          />
+        </label>
+        <p id="pairing-error" class="pairing-error muted" role="status" aria-live="polite"></p>
+        <div class="pairing-actions">
+          <button id="pairing-cancel" type="button">Cancel</button>
+          <button id="pairing-submit" class="primary-action" type="submit">Pair browser</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="root-initialization-dialog" class="pairing-dialog root-initialization-dialog" aria-labelledby="root-initialization-title">
+      <form id="root-initialization-form">
+        <div><div class="pill">Source write</div><h2 id="root-initialization-title">Confirm OKF initialization</h2><p class="muted">Registration is complete. Review the exact source changes below. A stale proposal will be rejected instead of writing changed files.</p></div>
+        <div id="root-initialization-git" class="root-warning hidden"></div>
+        <div id="root-initialization-changes" class="root-change-list"></div>
+        <label class="root-check"><input id="root-source-confirm" type="checkbox" /><span>I reviewed these exact changes and authorize OKF to modify the source files.</span></label>
+        <p id="root-initialization-error" class="pairing-error muted" role="status" aria-live="polite"></p>
+        <div class="pairing-actions"><button id="root-initialization-cancel" type="button">Leave registered read-only</button><button id="root-initialization-submit" class="primary-action" type="submit" disabled>Initialize OKF source</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="login-dialog" class="pairing-dialog" aria-labelledby="login-title">
+      <form id="login-form">
+        <div>
+          <div class="pill ai-pill">Authenticated HTTPS</div>
+          <h2 id="login-title">Sign in to OKF</h2>
+          <p class="muted">Reading remains anonymous. Credentials are sent only to this HTTPS origin and are never stored in browser storage.</p>
+        </div>
+        <label class="pairing-field">
+          <span>Username</span>
+          <input id="login-username" type="text" autocomplete="username" required />
+        </label>
+        <label class="pairing-field">
+          <span>Password</span>
+          <input id="login-password" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="login-error" class="pairing-error muted" role="status" aria-live="polite"></p>
+        <div class="pairing-actions">
+          <button id="login-cancel" type="button">Cancel</button>
+          <button id="login-submit" class="primary-action" type="submit">Sign in</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+name: OKF CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  OKF_VOYAGE_API_KEY: ""
+  OKF_HTTP_TRUSTED_PROXY_TOKEN: ""
+  OKF_REQUIRE_SOCKET_E2E: "1"
+
+jobs:
+  release-gates:
+    name: Release gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust with quality components
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup component add rustfmt clippy
+      - name: Cache dependencies for offline tests
+        run: cargo fetch --locked
+      - name: Run release gates without Voyage credentials
+        run: scripts/check-okf-release.sh
+
+  supported-platforms:
+    name: Tests on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for offline tests
+        run: cargo fetch --locked
+      - name: Test workspace offline and without provider credentials
+        run: |
+          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY \
+            CARGO_NET_OFFLINE=true cargo test --workspace --locked
+
+  minimum-rust:
+    name: ${{ matrix.component }} MSRV ${{ matrix.rust }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: okf
+            rust: "1.85"
+          - component: okf-http
+            rust: "1.85"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install declared minimum Rust
+        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
+      - name: Test copied standalone crates at MSRV
+        env:
+          RUSTUP_TOOLCHAIN: ${{ matrix.rust }}
+        run: scripts/check-okf-msrv.sh ${{ matrix.component }}

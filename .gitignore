@@ -1,0 +1,9 @@
+/target/
+.env
+.okf-voyage/
+.~lock.*#
+okf-ai-accepted-edges*.json
+.Rhistory
+*.lock
+*.lck
+!Cargo.lock

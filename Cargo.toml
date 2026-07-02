@@ -1,0 +1,11 @@
+[workspace]
+members = ["crates/okf", "crates/okf-http"]
+default-members = ["crates/okf", "crates/okf-http"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/kathrinmotzkus/open-knowledge-format"
+
