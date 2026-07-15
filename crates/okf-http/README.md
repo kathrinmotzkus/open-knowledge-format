@@ -21,10 +21,17 @@ browser installation in the invoking user account:
 ./install.sh --release
 ```
 
-Provision the packaged browser once before the first normal start:
+The installer provisions the packaged browser for the current user. If you
+installed only the binary manually, or if you want to refresh the browser
+assets after an upgrade, run:
 
 ```bash
 okf-http --install-browser
+```
+
+Then start the read-only local server:
+
+```bash
 okf-http 8003
 ```
 

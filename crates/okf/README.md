@@ -5,6 +5,18 @@ repositories. The crates.io package name is `okf-open-knowledge-format`; the
 Rust library crate is still named `okf`, so downstream code can continue to
 write `use okf::...`.
 
+Add it to a Rust project with the package name and import it through the
+library crate name:
+
+```toml
+[dependencies]
+okf = { package = "okf-open-knowledge-format", version = "0.3" }
+```
+
+```rust
+use okf::{DocumentRoot, Repository};
+```
+
 It provides:
 
 - ordered physical document roots
@@ -26,8 +38,6 @@ OKF does not own application paths. A host application selects the roots and
 passes them to `Repository`.
 
 ```rust
-use okf::{DocumentRoot, Repository};
-
 # fn open() -> Result<Repository, okf::OkfError> {
 Repository::open([
     DocumentRoot::mounted("product", "docs/knowledge"),
