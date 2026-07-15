@@ -10,6 +10,12 @@ tags: [okf, http, api, schema, compatibility]
 
 # OKF HTTP API v1
 
+Document summaries include `okf_uri` for mounted roots, `directory_path`, and
+`navigation_class`. Clients must build directory navigation from
+`source_relative_path` or `directory_path`, not from `topic`, `type`, or
+`kind`. Root-level documents use `navigation_class: root-document`; documents
+inside real directories use `nested-document`.
+
 The stable namespace is `/api/v1`. Successful JSON responses use:
 
 ```json

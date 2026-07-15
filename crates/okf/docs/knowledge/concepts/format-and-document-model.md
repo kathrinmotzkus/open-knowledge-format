@@ -149,6 +149,26 @@ root indexes may all change without changing the represented knowledge.
 
 ## Stable Identities
 
+### Logical document URIs
+
+Documents in a mounted root have a stable logical URI:
+
+```text
+okf://<mount>/<source-relative-document-path>
+```
+
+For example, `security/http-threat-model.md` in the `okf` mount is identified
+as `okf://okf/security/http-threat-model.md`. UTF-8 and spaces are
+percent-encoded. This is an OKF URI rather than a filesystem URL or formal URN:
+the mount is its authority, the path is relative to that mount, and no physical
+directory is disclosed. Unmounted roots do not receive such a URI until they
+have a stable logical mount.
+
+The navigation hierarchy follows the same structure. A root-level document is
+classified as `root-document`; a document below one or more real directories
+is `nested-document`. Frontmatter values such as `topic`, `type`, and `kind`
+remain metadata and never create synthetic folders.
+
 The local onboarding profile assigns two opaque URN values:
 
 - `okf_root_id: urn:okf:root:<token>` in frontmatter of the bundle-root

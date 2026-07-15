@@ -175,6 +175,14 @@
         </section>
 
         <section id="roots-panel" class="roots-panel hidden" role="tabpanel" aria-labelledby="mode-roots">
+          <section id="root-access-required" class="root-card">
+            <div class="pill">Authentication required</div>
+            <h3>Document root management is protected</h3>
+            <p class="muted">Reading remains available without signing in. Authenticate or pair this browser before viewing or changing document-root configuration.</p>
+            <button id="root-access-guide" type="button">How document-root access works</button>
+          </section>
+
+          <div id="root-protected-content" class="hidden">
           <div class="root-card">
             <div>
               <div class="pill">Protected configuration</div>
@@ -234,6 +242,7 @@
             <p class="root-warning">Dismissal does not approve files or move the baseline. The same changes can appear again after the next explicit check or server start.</p>
             <p id="root-change-status" class="muted" role="status" aria-live="polite"></p>
           </section>
+          </div>
         </section>
       </main>
     </div>

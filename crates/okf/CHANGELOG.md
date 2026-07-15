@@ -15,6 +15,11 @@ pre-1.0 period, a minor release may contain breaking changes.
   `open-knowledge-format` repository.
 - Updated package metadata for independent publication on crates.io.
 
+### Added
+
+- Added stable `okf://<mount>/<relative-path>` logical document URIs without
+  exposing physical filesystem paths.
+
 ## [0.3.0] - 2026-07-02
 
 This release establishes the format, identity, admission, compliance, proposal,

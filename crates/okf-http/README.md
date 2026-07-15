@@ -14,6 +14,13 @@ milestones shared with the OKF ecosystem are documented in the
 
 ## Usage
 
+From a source checkout, the repository installer builds the binary and keeps
+browser installation in the invoking user account:
+
+```bash
+./install.sh --release
+```
+
 Provision the packaged browser once before the first normal start:
 
 ```bash

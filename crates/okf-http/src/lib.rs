@@ -5527,7 +5527,10 @@ struct ApiDocumentSummary {
     status: Option<String>,
     updated: Option<String>,
     logical_path: String,
+    okf_uri: Option<String>,
     source_relative_path: String,
+    directory_path: String,
+    navigation_class: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     source_path: Option<String>,
     browser_path: String,
@@ -7132,6 +7135,22 @@ fn api_document_summary(
         })
         .expect("repository document must originate from a configured root");
     let root_mount = root_mount_name(root);
+    let okf_uri = root_mount.as_deref().and_then(|mount| {
+        okf::OkfUri::from_mount_and_path(mount, document.source_relative_path())
+            .ok()
+            .map(|uri| uri.to_string())
+    });
+    let directory_path = document
+        .source_relative_path()
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .map(logical_path_string)
+        .unwrap_or_default();
+    let navigation_class = if directory_path.is_empty() {
+        "root-document"
+    } else {
+        "nested-document"
+    };
     let browser_path = match root_mount.as_deref() {
         Some(mount) => format!(
             "/okf-docs/{}/{}",
@@ -7153,11 +7172,14 @@ fn api_document_summary(
         status: document.status().map(str::to_string),
         updated: document.updated().map(str::to_string),
         source_relative_path,
+        directory_path,
+        navigation_class,
         source_path: expose_physical_paths.then(|| document.physical_path().display().to_string()),
         browser_path,
         root_index,
         root_mount,
         logical_path,
+        okf_uri,
         is_plan: document.is_plan(),
     }
 }
@@ -8029,6 +8051,9 @@ mod tests {
         assert!(html.contains("aria-labelledby=\"pairing-title\""));
         assert!(!html.contains("id=\"ai-session-token\""));
         assert!(html.contains("SQLite is the durable review source"));
+        assert!(html.contains("id=\"root-access-required\""));
+        assert!(html.contains("id=\"root-protected-content\""));
+        assert!(source.contains("openRootAccessGuide"));
     }
 
     #[test]
@@ -8097,6 +8122,11 @@ mod tests {
         assert!(!app.contains("SCQL"));
         assert!(!app.contains("/repo-files/"));
         assert!(!app.contains("const DOCS = ["));
+        assert!(app.contains("buildNavigationNode"));
+        assert!(app.contains("navigationNodeContainsPath"));
+        assert!(app.contains("directory.open = revealMatches"));
+        assert!(app.contains("tree-directory"));
+        assert!(!app.contains("const section = document.topic"));
     }
 
     #[tokio::test]
@@ -8994,7 +9024,10 @@ mod tests {
                         "status": "active",
                         "updated": "2026-06-27",
                         "logical_path": "contract/index.md",
+                        "okf_uri": "okf://contract/index.md",
                         "source_relative_path": "index.md",
+                        "directory_path": "",
+                        "navigation_class": "root-document",
                         "browser_path": "/okf-docs/contract/index.md",
                         "root_index": 0,
                         "root_mount": "contract",

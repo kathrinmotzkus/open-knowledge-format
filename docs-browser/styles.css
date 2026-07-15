@@ -138,6 +138,26 @@ body {
   gap: 4px;
 }
 
+.tree-directory {
+  margin-left: 4px;
+}
+
+.tree-directory > summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 650;
+  padding: 5px 6px;
+}
+
+.tree-directory-contents {
+  border-left: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
+  margin-left: 8px;
+  padding-left: 8px;
+}
+
 .tree button {
   width: 100%;
   text-align: left;

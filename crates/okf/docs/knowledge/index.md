@@ -23,6 +23,7 @@ human-maintained Markdown knowledge.
 - [Embedding OKF](integration/embedding.md)
 - [OKF HTTP API v1](integration/http-api-v1.md)
 - [OKF HTTP threat model](security/http-threat-model.md)
+- [Document-root access and authentication](security/document-root-access.md)
 - [Voyage AI analysis layer](integration/voyage-ai-analysis.md)
 - [Migrating from scanlab to standalone OKF](integration/standalone-migration.md)
 - [Voyage AI integration plan](plans/voyage-ai-integration-plan.md)

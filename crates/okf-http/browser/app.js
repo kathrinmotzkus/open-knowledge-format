@@ -24,6 +24,9 @@ const modeGraphEl = document.getElementById("mode-graph");
 const modeAiEl = document.getElementById("mode-ai");
 const modeRootsEl = document.getElementById("mode-roots");
 const rootsPanelEl = document.getElementById("roots-panel");
+const rootAccessRequiredEl = document.getElementById("root-access-required");
+const rootAccessGuideEl = document.getElementById("root-access-guide");
+const rootProtectedContentEl = document.getElementById("root-protected-content");
 const graphShowTopicsEl = document.getElementById("graph-show-topics");
 const graphTopicFilterEl = document.getElementById("graph-topic-filter");
 const graphKindFilterEl = document.getElementById("graph-kind-filter");
@@ -195,6 +198,8 @@ function updateAccessDisplay(message = "") {
   aiPairOpenEl?.classList.toggle("hidden", !canPair);
   accessLoginOpenEl?.classList.toggle("hidden", serverMode !== "authenticated-tls" || paired);
   accessLogoutEl?.classList.toggle("hidden", !paired);
+  rootAccessRequiredEl?.classList.toggle("hidden", sessionAuthenticated);
+  rootProtectedContentEl?.classList.toggle("hidden", !sessionAuthenticated);
 
   let status = message;
   if (!status && serverMode === "read-only") {
@@ -215,6 +220,21 @@ function updateAccessDisplay(message = "") {
   if (accessStatusEl) accessStatusEl.textContent = status;
   if (aiAccessStatusEl) aiAccessStatusEl.textContent = status;
   renderAiSuggestions();
+}
+
+function openRootAccessGuide() {
+  const guide = allKnownItems().find((item) =>
+    item.logicalPath === "okf/security/document-root-access.md" ||
+    item.logicalPath?.endsWith("/security/document-root-access.md")
+  );
+  if (guide) {
+    void setMode("documents");
+    openDocument(guide);
+    return;
+  }
+  if (accessStatusEl) {
+    accessStatusEl.textContent = "The document-root access guide is not part of the configured document roots.";
+  }
 }
 
 function clearLocalSession(message = "") {
@@ -416,10 +436,7 @@ function rootLabel(root, index) {
 
 function documentGroupLabel(document, roots) {
   const root = roots[document.root_index] || {};
-  const rootName = rootLabel(root, document.root_index);
-  const relativeParts = String(document.source_relative_path || "").split("/").filter(Boolean);
-  const section = document.topic || (relativeParts.length > 1 ? relativeParts[0] : "Documents");
-  return `${rootName} / ${section}`;
+  return rootLabel(root, document.root_index);
 }
 
 function documentKind(document) {
@@ -437,6 +454,9 @@ function buildDocumentCatalog(payload) {
       path: document.browser_path,
       kind: documentKind(document),
       logicalPath: document.logical_path,
+      okfUri: document.okf_uri || "",
+      directoryParts: String(document.directory_path || "").split("/").filter(Boolean),
+      navigationClass: document.navigation_class || "root-document",
       topic: document.topic || ""
     };
     if (!groups.has(group)) groups.set(group, []);
@@ -2022,14 +2042,15 @@ function buildTree(query = "") {
       return (
         item.title.toLowerCase().includes(q) ||
         item.path.toLowerCase().includes(q) ||
-        item.kind.toLowerCase().includes(q)
+        item.kind.toLowerCase().includes(q) ||
+        item.directoryParts.some((part) => part.toLowerCase().includes(q))
       );
     });
 
     if (!items.length) return;
 
     const wrapper = document.createElement("section");
-    wrapper.className = "tree-group";
+    wrapper.className = "tree-group tree-root";
 
     const title = document.createElement("div");
     title.className = "tree-group-title";
@@ -2038,20 +2059,61 @@ function buildTree(query = "") {
 
     const list = document.createElement("div");
     list.className = "tree-list";
-
-    items.forEach((item) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.path = item.path;
-      button.innerHTML = `${escapeHtml(item.title)}<span class="small">${escapeHtml(displayDocumentPath(item.path))}</span>`;
-      button.addEventListener("click", () => openDocument(item));
-      if (item.path === currentPath) button.classList.add("active");
-      list.appendChild(button);
-    });
+    renderNavigationNode(list, buildNavigationNode(items), Boolean(q));
 
     wrapper.appendChild(list);
     treeEl.appendChild(wrapper);
   });
+}
+
+function buildNavigationNode(items) {
+  const root = { documents: [], directories: new Map() };
+  for (const item of items) {
+    let node = root;
+    for (const directory of item.directoryParts || []) {
+      if (!node.directories.has(directory)) {
+        node.directories.set(directory, { documents: [], directories: new Map() });
+      }
+      node = node.directories.get(directory);
+    }
+    node.documents.push(item);
+  }
+  return root;
+}
+
+function navigationNodeContainsPath(node, path) {
+  if (node.documents.some((item) => item.path === path)) return true;
+  return [...node.directories.values()].some((child) => navigationNodeContainsPath(child, path));
+}
+
+function renderNavigationNode(container, node, revealMatches = false) {
+  for (const item of node.documents.sort((left, right) => left.title.localeCompare(right.title))) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `tree-document ${item.navigationClass}`;
+    button.dataset.path = item.path;
+    const identity = item.okfUri || displayDocumentPath(item.path);
+    button.innerHTML = `${escapeHtml(item.title)}<span class="small">${escapeHtml(identity)}</span>`;
+    button.addEventListener("click", () => openDocument(item));
+    if (item.path === currentPath) button.classList.add("active");
+    container.appendChild(button);
+  }
+
+  const directories = [...node.directories.entries()]
+    .sort(([left], [right]) => left.localeCompare(right));
+  for (const [name, child] of directories) {
+    const directory = document.createElement("details");
+    directory.className = "tree-directory";
+    directory.open = revealMatches || navigationNodeContainsPath(child, currentPath);
+    const label = document.createElement("summary");
+    label.textContent = name;
+    directory.appendChild(label);
+    const contents = document.createElement("div");
+    contents.className = "tree-directory-contents";
+    renderNavigationNode(contents, child, revealMatches);
+    directory.appendChild(contents);
+    container.appendChild(directory);
+  }
 }
 
 function clearNode(node) {
@@ -2519,6 +2581,7 @@ modeDocumentsEl.addEventListener("click", () => void setMode("documents"));
 modeGraphEl.addEventListener("click", () => void setMode("graph"));
 modeAiEl?.addEventListener("click", () => void setMode("ai"));
 modeRootsEl?.addEventListener("click", () => void setMode("roots"));
+rootAccessGuideEl?.addEventListener("click", openRootAccessGuide);
 graphShowTopicsEl.addEventListener("change", applyGraphFilters);
 graphTopicFilterEl.addEventListener("change", applyGraphFilters);
 graphKindFilterEl.addEventListener("change", applyGraphFilters);

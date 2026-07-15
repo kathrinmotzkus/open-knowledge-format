@@ -13,6 +13,15 @@ pre-1.0 period, a minor release may contain breaking changes.
 - Moved `okf-http` and its browser into the independent
   `open-knowledge-format` workspace.
 - Updated package metadata for independent publication on crates.io.
+- Added the standalone project installer, including explicit one-time cleanup
+  of the former scanlab-owned system installation.
+- Changed browser navigation to follow actual mounted directory structure;
+  frontmatter topics no longer create synthetic navigation folders.
+- Collapsed unrelated navigation directories by default while keeping the
+  current document ancestry and directories containing search matches open.
+- Reduced anonymous document-root management to an authentication notice and
+  linked guide; configuration forms and details render only after login or
+  local-editor pairing.
 
 ## [0.3.0] - 2026-07-02
 

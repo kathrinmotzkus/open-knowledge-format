@@ -30,5 +30,27 @@ cargo run -p okf-http -- --browser-root docs-browser 8003
 
 Then open `http://127.0.0.1:8003/docs-browser/index.html`.
 
-The project is licensed under Apache License 2.0. See [LICENSE](LICENSE).
+## Installation
 
+Run the installer as your regular user:
+
+```bash
+./install.sh --release
+```
+
+It builds and installs `/usr/local/bin/okf-http` with sudo and provisions the
+packaged browser for the current user without sudo. Use `--prefix`,
+`--no-browser`, or `--force-browser` when required; `./install.sh --help`
+documents every option.
+
+For the one-time migration from the former scanlab-owned installation, use:
+
+```bash
+./install.sh --release --remove-legacy-scanlab --force-browser
+```
+
+The explicit migration flag removes the old `/usr/local/bin/okf-http` and
+`/usr/local/share/scanlab/component-docs/okf` before installing the standalone
+binary. It is never performed implicitly.
+
+The project is licensed under Apache License 2.0. See [LICENSE](LICENSE).

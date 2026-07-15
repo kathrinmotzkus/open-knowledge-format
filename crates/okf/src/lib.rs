@@ -17,6 +17,7 @@ mod proposal;
 mod query;
 mod repository;
 mod transaction;
+mod uri;
 pub mod voyage;
 
 pub use admission::{
@@ -62,3 +63,4 @@ pub use transaction::{
     InitializationPlan, InitializationReport, RegistrationReport, RootConfigurationUpdate,
     SourceFileChange, TransactionError,
 };
+pub use uri::{OkfUri, OkfUriError};
