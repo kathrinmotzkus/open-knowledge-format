@@ -14,6 +14,17 @@ milestones shared with the OKF ecosystem are documented in the
 
 ## Usage
 
+From crates.io:
+
+```bash
+cargo install okf-http --locked
+okf-http --install-browser
+okf-http 8003
+```
+
+`cargo install` installs the `okf-http` binary. `okf-http --install-browser`
+then provisions the packaged browser assets for the current user.
+
 From a source checkout, the repository installer builds the binary and keeps
 browser installation in the invoking user account:
 

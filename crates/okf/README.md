@@ -69,8 +69,23 @@ Release history and planned compatibility milestones are documented in
 
 ## Browser and HTTP Workflow
 
-The OKF browser is served by the separate `okf-http` binary. In this repository
-development checkout, start it with:
+The OKF browser is served by the separate `okf-http` binary.
+
+From crates.io:
+
+```bash
+cargo install okf-http --locked
+okf-http --install-browser
+okf-http 8003
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8003/docs-browser/index.html
+```
+
+In a repository development checkout, start it with:
 
 ```bash
 cargo run -p okf-http -- --browser-root docs-browser 8003

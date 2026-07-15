@@ -16,7 +16,17 @@ search are optional explicit actions that may consume provider tokens.
 
 ## Quick Path: Local Read-Only Browsing
 
-If you only want to view Markdown knowledge folders in the browser:
+If you only want to view Markdown knowledge folders in the browser, install
+the published server from crates.io:
+
+```bash
+cargo install okf-http --locked
+okf-http --install-browser
+okf-http --local-editor 8003
+```
+
+If you are working from a GitHub source checkout instead, run the repository
+installer first:
 
 ```bash
 ./install.sh --release
@@ -37,7 +47,19 @@ not spend provider tokens.
 
 ## 1. Install the Binary and Browser
 
-From the repository root:
+From crates.io:
+
+```bash
+cargo install okf-http --locked
+okf-http --install-browser
+```
+
+`cargo install` installs the `okf-http` binary from the published package.
+`okf-http --install-browser` installs the browser assets embedded in that
+binary.
+
+From a GitHub source checkout, use the repository installer from the repository
+root:
 
 ```bash
 ./install.sh --release
@@ -48,9 +70,9 @@ packaged browser for the current user. On Linux the packaged frontend is
 installed in `~/docs-browser`. After this installer path, you normally do not
 need to run `okf-http --install-browser` separately.
 
-If you install only the binary manually, for example with
+If you install only the binary manually from a checkout, for example with
 `cargo install --path crates/okf-http`, provision or refresh the browser assets
-with:
+with the same browser installer command:
 
 ```bash
 okf-http --install-browser
