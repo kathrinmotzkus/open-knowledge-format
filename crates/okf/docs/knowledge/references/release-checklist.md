@@ -12,8 +12,8 @@ tags: [okf, release, ci, security, packaging]
 
 This checklist covers source and binary community releases of
 `okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.1`
-and `okf-http 0.3.1` have been published on crates.io. The library package
-exports the Rust crate name `okf`.
+and `okf-http 0.3.2` are the current prepared release versions. The library
+package exports the Rust crate name `okf`.
 
 ## Clean Source
 
@@ -40,10 +40,10 @@ RustSec audit status, JavaScript syntax, browser security tests,
 browser-source synchronization, root-security invariants, package contents, and
 whitespace errors.
 
-At the time of the 0.3.0 release-readiness pass, `cargo audit` must report no
-known vulnerabilities. The remaining `rustls-pemfile` unmaintained advisory is
-tracked as an allowed warning until the TLS PEM-loading path is replaced or an
-actively maintained replacement is selected.
+`cargo audit` must report no known vulnerabilities and no unreviewed
+unmaintained dependency warnings. `okf-http` intentionally uses a limited
+internal PEM loader for TLS certificate chains and private keys so the release
+does not depend on the unmaintained `rustls-pemfile` crate.
 
 ## Versions and Changelogs
 

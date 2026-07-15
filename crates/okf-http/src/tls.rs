@@ -1,7 +1,6 @@
 use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::io::{BufReader, Cursor};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -11,6 +10,9 @@ use rcgen::{
     BasicConstraints, CertificateParams, DistinguishedName, DnType, IsCa, KeyPair, KeyUsagePurpose,
 };
 use rustls::crypto::ring;
+use rustls::pki_types::{
+    CertificateDer, PrivateKeyDer, PrivatePkcs1KeyDer, PrivatePkcs8KeyDer, PrivateSec1KeyDer,
+};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use x509_parser::extensions::GeneralName;
@@ -155,13 +157,10 @@ pub fn prepare_tls(files: &TlsFiles, expected_host: &str) -> Result<PreparedTls,
     let certificate_pem = read_regular_file(files.certificate(), "TLS certificate")?;
     let private_key_pem = read_regular_file(files.private_key(), "TLS private key")?;
 
-    let mut certificate_reader = BufReader::new(Cursor::new(&certificate_pem));
-    let certificates = rustls_pemfile::certs(&mut certificate_reader)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| format!("failed to parse TLS certificate PEM: {error}"))?;
-    let Some(leaf) = certificates.first() else {
-        return Err("TLS certificate file contains no certificates".to_string());
-    };
+    let certificates = certificate_chain_from_pem(&certificate_pem, "TLS certificate")?;
+    let leaf = certificates
+        .first()
+        .expect("certificate_chain_from_pem guarantees at least one certificate");
     let leaf_der = leaf.as_ref().to_vec();
 
     let (_, certificate) = parse_x509_certificate(&leaf_der)
@@ -190,16 +189,7 @@ pub fn prepare_tls(files: &TlsFiles, expected_host: &str) -> Result<PreparedTls,
         ));
     }
 
-    let mut private_key_reader = BufReader::new(Cursor::new(&private_key_pem));
-    let private_key = rustls_pemfile::private_key(&mut private_key_reader)
-        .map_err(|error| format!("failed to parse TLS private key PEM: {error}"))?
-        .ok_or_else(|| "TLS private-key file contains no supported private key".to_string())?;
-    if rustls_pemfile::private_key(&mut private_key_reader)
-        .map_err(|error| format!("failed to parse TLS private key PEM: {error}"))?
-        .is_some()
-    {
-        return Err("TLS private-key file contains more than one private key".to_string());
-    }
+    let private_key = private_key_from_pem(&private_key_pem, "TLS private-key")?;
 
     let provider = Arc::new(ring::default_provider());
     let mut server_config = rustls::ServerConfig::builder_with_provider(provider)
@@ -563,14 +553,185 @@ fn verify_issued_certificate(certificate_pem: &[u8], ca_pem: &[u8]) -> Result<()
 }
 
 fn first_certificate_der(pem: &[u8], label: &str) -> Result<Vec<u8>, String> {
-    let mut reader = BufReader::new(Cursor::new(pem));
-    let certificate = rustls_pemfile::certs(&mut reader)
+    certificate_chain_from_pem(pem, label)?
+        .into_iter()
         .next()
-        .transpose()
-        .map_err(|error| format!("failed to parse {label} PEM: {error}"))?;
-    certificate
         .map(|certificate| certificate.as_ref().to_vec())
         .ok_or_else(|| format!("{label} file contains no certificate"))
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct PemBlock {
+    label: String,
+    der: Vec<u8>,
+}
+
+fn certificate_chain_from_pem(
+    pem: &[u8],
+    label: &str,
+) -> Result<Vec<CertificateDer<'static>>, String> {
+    let certificates = parse_pem_blocks(pem, label)?
+        .into_iter()
+        .filter(|block| block.label == "CERTIFICATE")
+        .map(|block| CertificateDer::from(block.der))
+        .collect::<Vec<_>>();
+    if certificates.is_empty() {
+        return Err(format!("{label} file contains no certificates"));
+    }
+    Ok(certificates)
+}
+
+fn private_key_from_pem(pem: &[u8], label: &str) -> Result<PrivateKeyDer<'static>, String> {
+    let mut keys = Vec::new();
+    for block in parse_pem_blocks(pem, label)? {
+        let key = match block.label.as_str() {
+            "PRIVATE KEY" => Some(PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(block.der))),
+            "RSA PRIVATE KEY" => Some(PrivateKeyDer::Pkcs1(PrivatePkcs1KeyDer::from(block.der))),
+            "EC PRIVATE KEY" => Some(PrivateKeyDer::Sec1(PrivateSec1KeyDer::from(block.der))),
+            _ => None,
+        };
+        if let Some(key) = key {
+            keys.push(key);
+        }
+    }
+    match keys.len() {
+        0 => Err(format!("{label} file contains no supported private key")),
+        1 => Ok(keys.remove(0)),
+        _ => Err(format!("{label} file contains more than one private key")),
+    }
+}
+
+fn parse_pem_blocks(pem: &[u8], label: &str) -> Result<Vec<PemBlock>, String> {
+    let text =
+        std::str::from_utf8(pem).map_err(|_| format!("failed to parse {label} PEM: not UTF-8"))?;
+    let mut blocks = Vec::new();
+    let mut current_label: Option<String> = None;
+    let mut body = String::new();
+
+    for raw_line in text.lines() {
+        let line = raw_line.trim();
+        if line.is_empty() {
+            continue;
+        }
+
+        if let Some(begin_label) = line
+            .strip_prefix("-----BEGIN ")
+            .and_then(|rest| rest.strip_suffix("-----"))
+        {
+            if current_label.is_some() {
+                return Err(format!(
+                    "failed to parse {label} PEM: nested BEGIN boundary"
+                ));
+            }
+            if begin_label.trim().is_empty() {
+                return Err(format!("failed to parse {label} PEM: empty BEGIN label"));
+            }
+            current_label = Some(begin_label.to_string());
+            body.clear();
+            continue;
+        }
+
+        if let Some(end_label) = line
+            .strip_prefix("-----END ")
+            .and_then(|rest| rest.strip_suffix("-----"))
+        {
+            let Some(begin_label) = current_label.take() else {
+                return Err(format!(
+                    "failed to parse {label} PEM: END boundary without matching BEGIN"
+                ));
+            };
+            if begin_label != end_label {
+                return Err(format!(
+                    "failed to parse {label} PEM: END {end_label} does not match BEGIN {begin_label}"
+                ));
+            }
+            let der = decode_pem_base64(&body, label)?;
+            blocks.push(PemBlock {
+                label: begin_label,
+                der,
+            });
+            body.clear();
+            continue;
+        }
+
+        if current_label.is_some() {
+            if line.starts_with("-----") {
+                return Err(format!(
+                    "failed to parse {label} PEM: malformed PEM boundary"
+                ));
+            }
+            body.push_str(line);
+        }
+    }
+
+    if let Some(open_label) = current_label {
+        return Err(format!(
+            "failed to parse {label} PEM: missing END {open_label} boundary"
+        ));
+    }
+
+    Ok(blocks)
+}
+
+fn decode_pem_base64(input: &str, label: &str) -> Result<Vec<u8>, String> {
+    let bytes = input.as_bytes();
+    if bytes.is_empty() || bytes.len() % 4 != 0 {
+        return Err(format!("failed to parse {label} PEM: invalid base64 data"));
+    }
+
+    let mut decoded = Vec::with_capacity(bytes.len() / 4 * 3);
+    let chunks = bytes.chunks_exact(4);
+    let chunk_count = chunks.len();
+    for (index, chunk) in chunks.enumerate() {
+        let is_last = index + 1 == chunk_count;
+        let padding = chunk.iter().filter(|byte| **byte == b'=').count();
+        if padding > 2
+            || chunk[0] == b'='
+            || chunk[1] == b'='
+            || (chunk[2] == b'=' && chunk[3] != b'=')
+            || (padding > 0 && !is_last)
+        {
+            return Err(format!("failed to parse {label} PEM: invalid base64 data"));
+        }
+
+        let first = base64_value(chunk[0], label)?;
+        let second = base64_value(chunk[1], label)?;
+        let third = if chunk[2] == b'=' {
+            0
+        } else {
+            base64_value(chunk[2], label)?
+        };
+        let fourth = if chunk[3] == b'=' {
+            0
+        } else {
+            base64_value(chunk[3], label)?
+        };
+
+        let combined = ((first as u32) << 18)
+            | ((second as u32) << 12)
+            | ((third as u32) << 6)
+            | fourth as u32;
+        decoded.push((combined >> 16) as u8);
+        if padding < 2 {
+            decoded.push((combined >> 8) as u8);
+        }
+        if padding == 0 {
+            decoded.push(combined as u8);
+        }
+    }
+
+    Ok(decoded)
+}
+
+fn base64_value(byte: u8, label: &str) -> Result<u8, String> {
+    match byte {
+        b'A'..=b'Z' => Ok(byte - b'A'),
+        b'a'..=b'z' => Ok(byte - b'a' + 26),
+        b'0'..=b'9' => Ok(byte - b'0' + 52),
+        b'+' => Ok(62),
+        b'/' => Ok(63),
+        _ => Err(format!("failed to parse {label} PEM: invalid base64 data")),
+    }
 }
 
 fn fingerprint(der: &[u8]) -> String {
@@ -885,11 +1046,55 @@ mod tests {
     }
 
     #[test]
+    fn certificate_pem_parser_accepts_chains() {
+        let first = fixture(&["localhost"], None);
+        let second = fixture(&["localhost"], None);
+        let chain = format!(
+            "{}{}",
+            fs::read_to_string(first.files.certificate()).expect("first cert"),
+            fs::read_to_string(second.files.certificate()).expect("second cert")
+        );
+
+        let certificates =
+            certificate_chain_from_pem(chain.as_bytes(), "TLS certificate").expect("chain");
+
+        assert_eq!(certificates.len(), 2);
+    }
+
+    #[test]
+    fn invalid_certificate_base64_fails_before_listener_startup() {
+        let fixture = fixture(&["localhost"], None);
+        fs::write(
+            fixture.files.certificate(),
+            "-----BEGIN CERTIFICATE-----\n!!!!\n-----END CERTIFICATE-----\n",
+        )
+        .expect("damage certificate");
+        let error = prepare_tls(&fixture.files, "localhost").expect_err("invalid base64");
+        assert!(error.contains("invalid base64 data"));
+    }
+
+    #[test]
     fn malformed_private_key_fails_before_listener_startup() {
         let fixture = fixture(&["localhost"], None);
         fs::write(fixture.files.private_key(), "not a private key").expect("damage key");
         set_private_key_permissions(fixture.files.private_key(), 0o600);
         let error = prepare_tls(&fixture.files, "localhost").expect_err("malformed key");
         assert!(error.contains("contains no supported private key"));
+    }
+
+    #[test]
+    fn multiple_private_keys_fail_before_listener_startup() {
+        let fixture = fixture(&["localhost"], None);
+        let private_key = fs::read_to_string(fixture.files.private_key()).expect("private key");
+        fs::write(
+            fixture.files.private_key(),
+            format!("{private_key}{private_key}"),
+        )
+        .expect("duplicate key");
+        set_private_key_permissions(fixture.files.private_key(), 0o600);
+
+        let error = prepare_tls(&fixture.files, "localhost").expect_err("multiple private keys");
+
+        assert!(error.contains("contains more than one private key"));
     }
 }

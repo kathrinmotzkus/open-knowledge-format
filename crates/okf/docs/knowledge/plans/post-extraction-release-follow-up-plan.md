@@ -30,12 +30,15 @@ their order explicit.
   locked/offline tests, browser security checks, browser asset synchronization,
   root-security checks, package-content checks, and whitespace checks.
 - `cargo audit` reports no known vulnerabilities.
-- The remaining `rustls-pemfile` advisory is an unmaintained-warning, not a
-  vulnerability, and is tracked below.
+- `okf-http` no longer depends on `rustls-pemfile`; TLS PEM loading is handled
+  by a limited internal parser for certificate chains and supported private-key
+  blocks.
 - `okf-open-knowledge-format 0.3.0` is published on crates.io and tagged as
   `okf-open-knowledge-format-v0.3.0`.
 - `okf-open-knowledge-format 0.3.1` is the documentation patch release for the
   crates.io installation path.
+- `okf-http 0.3.2` is the prepared maintenance release that removes the
+  unmaintained `rustls-pemfile` dependency.
 - `okf-http` can now be tested against the published library package during
   packaging and dry-run verification.
 
@@ -74,9 +77,10 @@ Completion criteria:
 
 Status: completed for crates.io. `okf-http 0.3.0` is published on crates.io and
 tagged as `okf-http-v0.3.0`; `okf-http 0.3.1` is the documentation patch
-release for the crates.io installation path. It verifies successfully against
-the published `okf-open-knowledge-format` crate. GitHub release binaries remain
-an optional future distribution channel.
+release for the crates.io installation path; `okf-http 0.3.2` is the prepared
+maintenance release that removes `rustls-pemfile`. It verifies successfully
+against the published `okf-open-knowledge-format` crate. GitHub release
+binaries remain an optional future distribution channel.
 
 - Re-run `cargo package -p okf-http --locked --no-verify` after
   `okf-open-knowledge-format 0.3.0` exists on crates.io.
@@ -113,21 +117,27 @@ Completion criteria:
 
 ## Phase 5: Resolve or Contain `rustls-pemfile`
 
-`cargo audit` currently reports `rustls-pemfile` as unmaintained. It is used by
-`okf-http` for certificate and private-key PEM loading.
+Status: implemented for `okf-http 0.3.2`.
 
-Options:
+`cargo audit` previously reported `rustls-pemfile` as unmaintained. It was used
+by `okf-http` for certificate and private-key PEM loading.
 
-1. Replace it with an actively maintained PEM parser.
-2. Implement a small, well-tested, limited PEM loader for the exact certificate
-   and private-key formats OKF accepts.
-3. Keep it temporarily as an explicitly documented allowed warning while
-   monitoring RustSec and Rustls ecosystem changes.
+Chosen implementation:
+
+- `rustls-pemfile` has been removed from `okf-http`.
+- `okf-http` now uses a small internal PEM loader for the exact certificate
+  chain and private-key block types it accepts:
+  - `CERTIFICATE`
+  - `PRIVATE KEY`
+  - `RSA PRIVATE KEY`
+  - `EC PRIVATE KEY`
+- Tests cover certificate chains, malformed certificates, malformed private
+  keys, invalid Base64 payloads, and duplicate private-key rejection.
 
 Completion criteria:
 
-- Either the warning is gone, or the release notes and security policy clearly
-  explain the temporary exception and its scope.
+- The `rustls-pemfile` warning is gone.
+- The release notes explain the dependency removal.
 
 ## Phase 6: Browser Document-Root Onboarding
 

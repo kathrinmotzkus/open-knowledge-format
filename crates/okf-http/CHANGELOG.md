@@ -14,6 +14,14 @@ pre-1.0 period, a minor release may contain breaking changes.
   knowledge networks while keeping canonical knowledge in Markdown and
   frontmatter.
 
+## [0.3.2] - 2026-07-15
+
+### Security
+
+- Replaced the unmaintained `rustls-pemfile` dependency with a small internal
+  PEM loader for the certificate-chain and private-key formats accepted by
+  `okf-http`.
+
 ## [0.3.1] - 2026-07-15
 
 ### Fixed
