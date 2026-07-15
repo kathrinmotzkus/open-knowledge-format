@@ -8,7 +8,12 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Changed
+
+- Expanded documentation to position OKF as a durable knowledge-networking
+  layer for Markdown documents, metadata, identities, reviewed relations,
+  semantic search, and agent-readable context.
+- Added the `OKF as a Knowledge Network` concept document.
 
 ## [0.3.1] - 2026-07-15
 

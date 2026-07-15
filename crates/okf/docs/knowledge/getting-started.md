@@ -4,15 +4,25 @@ type: Guide
 kind: knowledge-document
 topic: okf
 status: active
-updated: 2026-06-30
+updated: 2026-07-15
 tags: [okf, installation, browser, voyage-ai, quickstart]
 ---
 
 # Getting Started with Standalone OKF
 
-This guide starts the standalone OKF browser from a source checkout. Normal
-browsing is local and token-free. Voyage connectivity, indexing, and semantic
-search are optional explicit actions that may consume provider tokens.
+This guide starts the standalone OKF browser from crates.io or from a GitHub
+source checkout. Normal browsing is local and token-free. Voyage connectivity,
+indexing, and semantic search are optional explicit actions that may consume
+provider tokens.
+
+OKF is useful even before any AI feature is enabled. The first goal is to turn
+existing knowledge folders into a visible, reviewable network: documents have
+roots, metadata, stable identities, and explicit relationships. Semantic
+analysis can later suggest additional edges, but it remains a derived and
+reviewed layer on top of canonical Markdown.
+
+For the design background, see
+[OKF as a Knowledge Network](concepts/knowledge-networking.md).
 
 ## Quick Path: Local Read-Only Browsing
 

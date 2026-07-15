@@ -8,12 +8,16 @@ updated: 2026-07-15
 
 # Open Knowledge Format Documentation
 
-OKF is a small, application-independent model for discovering and querying
-human-maintained Markdown knowledge.
+OKF is a small, application-independent model for discovering, querying, and
+connecting human-maintained Markdown knowledge. This project treats OKF as a
+knowledge-networking format: canonical knowledge remains readable Markdown and
+frontmatter, while roots, identities, relations, search indexes, and reviewed
+AI suggestions make the knowledge navigable by people, tools, and agents.
 
 ## Start Here
 
 - [Getting started with standalone OKF](getting-started.md)
+- [OKF as a knowledge network](concepts/knowledge-networking.md)
 - [Format and document model](concepts/format-and-document-model.md)
 - [Document root onboarding baseline](concepts/root-onboarding-baseline.md)
 - [Snapshot-bound root proposals](concepts/snapshot-bound-root-proposals.md)

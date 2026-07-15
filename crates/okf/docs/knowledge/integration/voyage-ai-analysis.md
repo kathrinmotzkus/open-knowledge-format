@@ -4,7 +4,7 @@ type: Architecture Decision
 kind: knowledge-document
 topic: okf
 status: draft
-updated: 2026-06-24
+updated: 2026-07-15
 tags: [okf, voyage-ai, embeddings, vectors, architecture]
 ---
 
@@ -34,6 +34,9 @@ the format:
 - vector databases can provide fast retrieval over larger OKF repositories
 
 This should enhance OKF, not make OKF dependent on a proprietary service.
+In the knowledge-network model, embeddings are a way to discover candidate
+connections. They are not the connection itself. The durable connection is only
+created when a reviewed relation is written back to canonical frontmatter.
 
 ## Boundaries
 

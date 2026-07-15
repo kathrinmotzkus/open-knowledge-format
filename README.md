@@ -10,6 +10,11 @@ later: documents move, similar names collide, links become implicit, metadata
 is missing, and semantic relationships are difficult to discover without
 locking the work into one application. OKF is meant to solve that layer.
 
+This project treats OKF primarily as a knowledge-networking format. It is a way
+to connect Markdown documents, frontmatter metadata, stable identities,
+relations, semantic search, and reviewed AI suggestions without making one
+database, web service, or model provider the owner of the knowledge.
+
 The format keeps human-readable Markdown at the center, but adds enough
 structure for software to understand a repository safely:
 
@@ -29,6 +34,12 @@ workflow, and can optionally connect derived semantic-analysis data such as
 Voyage AI embeddings. Reading is local and token-free by default; editing,
 configuration changes, and paid AI calls must be started explicitly.
 
+OKF can help AI agents receive better context and produce better work, but it
+is not itself an agent framework. The durable layer is the knowledge network:
+plain files, explicit metadata, reviewable relations, and rebuildable derived
+indexes. Agents, browsers, search tools, and host applications can all build
+on that shared layer.
+
 This repository contains the independently versioned OKF workspace.
 
 - [`okf`](crates/okf/README.md) is the filesystem-backed document model and
@@ -42,6 +53,8 @@ This repository contains the independently versioned OKF workspace.
 
 The complete knowledge documentation starts at
 [`crates/okf/docs/knowledge/index.md`](crates/okf/docs/knowledge/index.md).
+For the conceptual positioning, start with
+[`OKF as a Knowledge Network`](crates/okf/docs/knowledge/concepts/knowledge-networking.md).
 
 ## Development
 
@@ -62,7 +75,17 @@ Then open `http://127.0.0.1:8003/docs-browser/index.html`.
 
 ## Installation
 
-Run the installer as your regular user:
+From crates.io:
+
+```bash
+cargo install okf-http --locked
+okf-http --install-browser
+okf-http 8003
+```
+
+Then open `http://127.0.0.1:8003/docs-browser/index.html`.
+
+From a GitHub source checkout, run the installer as your regular user:
 
 ```bash
 ./install.sh --release

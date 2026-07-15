@@ -5,6 +5,13 @@ repositories. The crates.io package name is `okf-open-knowledge-format`; the
 Rust library crate is still named `okf`, so downstream code can continue to
 write `use okf::...`.
 
+The library is the lower layer of an OKF knowledge network. It does not try to
+be a browser, database, model provider, or agent runtime. Instead, it gives
+host applications a reliable way to discover documents, preserve frontmatter,
+separate roots, identify documents, inspect relations, and plan safe changes.
+Browsers, search tools, static renderers, RAG pipelines, and agents can then
+build on the same canonical Markdown files.
+
 Add it to a Rust project with the package name and import it through the
 library crate name:
 
@@ -52,6 +59,8 @@ layout. In the example, two files named `index.md` become
 
 The complete documentation starts at
 [`docs/knowledge/index.md`](docs/knowledge/index.md).
+The conceptual position is described in
+[OKF as a Knowledge Network](docs/knowledge/concepts/knowledge-networking.md).
 
 Portable onboarding identities are distinct from filesystem paths and mount
 names. `RootId` reads `okf_root_id` from the bundle-root `index.md`,
@@ -69,7 +78,9 @@ Release history and planned compatibility milestones are documented in
 
 ## Browser and HTTP Workflow
 
-The OKF browser is served by the separate `okf-http` binary.
+The OKF browser is served by the separate `okf-http` binary. The browser is a
+workbench for exploring and reviewing the knowledge network; it is not required
+to use the library.
 
 From crates.io:
 

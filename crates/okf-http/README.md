@@ -5,12 +5,27 @@ the recommended local way to serve the OKF browser; Python's `http.server` is
 only useful as historical troubleshooting context and does not provide the OKF
 APIs.
 
+The binary is the local workbench for OKF knowledge networks. It lets users
+browse configured document roots, inspect the graph, onboard existing folders,
+review proposed metadata and relation changes, and optionally run semantic
+analysis. Reading is anonymous and local by default. Protected workflows such
+as root registration, source initialization, accepted-relation writes, and
+token-spending AI actions require explicit local-editor pairing or
+authenticated HTTPS.
+
+`okf-http` is not the canonical store. Canonical knowledge remains in Markdown
+and frontmatter. SQLite databases, embedding vectors, monitoring baselines, and
+suggestion review sets are derived or operational state around that canonical
+layer.
+
 For a complete first installation, configuration, browser, Voyage, review,
 apply, and rebuild walkthrough, see
-[Getting Started with Standalone OKF](../okf/docs/knowledge/getting-started.md).
+[Getting Started with Standalone OKF](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/getting-started.md).
+For the design position behind this split, see
+[OKF as a Knowledge Network](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/concepts/knowledge-networking.md).
 Release history is recorded in [CHANGELOG.md](CHANGELOG.md). Compatibility
 milestones shared with the OKF ecosystem are documented in the
-[OKF versioning roadmap](../okf/docs/knowledge/plans/versioning-roadmap.md).
+[OKF versioning roadmap](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/plans/versioning-roadmap.md).
 
 ## Usage
 
@@ -213,7 +228,7 @@ Managed files live under `$XDG_STATE_HOME/okf/tls` (normally
 `~/.local/state/okf/tls`). No trust store is changed automatically. Import only
 the printed public `ca-cert.pem` through the browser or current-user platform
 UI if local policy permits it. The full trust, renewal, and recovery workflow
-is documented in the [getting-started guide](../okf/docs/knowledge/getting-started.md#7-optional-local-https).
+is documented in the [getting-started guide](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/getting-started.md#7-optional-local-https).
 
 Plain HTTP is always loopback-only. Start HTTPS with explicit PEM files:
 
@@ -389,7 +404,7 @@ without granting general filesystem access.
 All JSON responses use an `api_version: "v1"` envelope, return stable error
 codes, and carry a request ID. The compatibility aliases below `/api/okf/`
 are deprecated. The complete schema and compatibility policy are documented
-in [OKF HTTP API v1](../okf/docs/knowledge/integration/http-api-v1.md).
+in [OKF HTTP API v1](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/integration/http-api-v1.md).
 
 Voyage AI planning is exposed through non-token-spending endpoints:
 
@@ -523,10 +538,10 @@ and raw vectors remain in SQLite.
 
 The full implementation plan lives here:
 
-[`../okf/docs/knowledge/plans/okf-http-server-plan.md`](../okf/docs/knowledge/plans/okf-http-server-plan.md)
+[OKF HTTP server plan](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/plans/okf-http-server-plan.md)
 
 The security boundary and residual risks are documented in the
-[OKF HTTP threat model](../okf/docs/knowledge/security/http-threat-model.md).
+[OKF HTTP threat model](https://github.com/kathrinmotzkus/open-knowledge-format/blob/main/crates/okf/docs/knowledge/security/http-threat-model.md).
 
 ## Source Layout
 

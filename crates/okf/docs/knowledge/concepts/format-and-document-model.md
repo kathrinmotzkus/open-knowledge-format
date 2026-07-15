@@ -4,13 +4,19 @@ type: Reference
 kind: knowledge-document
 topic: okf
 status: active
-updated: 2026-07-01
+updated: 2026-07-15
 ---
 
 # OKF Format and Document Model
 
 An OKF repository is a collection of UTF-8 Markdown documents discovered below
 one or more ordered roots.
+
+The format is intentionally ordinary at the file level and network-oriented at
+the repository level. A single document must remain readable in a plain text
+editor. A configured repository can then treat many such documents as a
+connected knowledge space through roots, logical paths, stable identities,
+frontmatter metadata, declared resources, and reviewed relations.
 
 ## Markdown
 

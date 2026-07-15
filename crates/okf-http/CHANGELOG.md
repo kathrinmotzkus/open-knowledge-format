@@ -8,7 +8,11 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Changed
+
+- Expanded documentation to describe `okf-http` as the local workbench for OKF
+  knowledge networks while keeping canonical knowledge in Markdown and
+  frontmatter.
 
 ## [0.3.1] - 2026-07-15
 
