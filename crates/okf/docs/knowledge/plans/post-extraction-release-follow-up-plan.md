@@ -70,10 +70,10 @@ Completion criteria:
 
 ## Phase 3: Package and Publish `okf-http`
 
-Status: packaging dry-run completed. `cargo publish -p okf-http --dry-run
---locked` verifies successfully against the published
-`okf-open-knowledge-format 0.3.0` crate. The remaining decision is whether to
-publish `okf-http` through crates.io, GitHub release binaries, or both.
+Status: completed for crates.io. `okf-http 0.3.0` is published on crates.io and
+tagged as `okf-http-v0.3.0`. It verifies successfully against the published
+`okf-open-knowledge-format 0.3.0` crate. GitHub release binaries remain an
+optional future distribution channel.
 
 - Re-run `cargo package -p okf-http --locked --no-verify` after
   `okf-open-knowledge-format 0.3.0` exists on crates.io.
