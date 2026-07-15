@@ -20,6 +20,8 @@ env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
     cargo fmt --all -- --check
 env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
     cargo clippy --workspace --all-targets -- -D warnings
+env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
+    cargo audit
 
 env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
     CARGO_NET_OFFLINE=true cargo test --workspace --locked

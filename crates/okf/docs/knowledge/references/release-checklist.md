@@ -34,8 +34,14 @@ env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY \
 ```
 
 The script verifies formatting, strict Clippy, offline locked workspace tests,
-JavaScript syntax, browser security tests, browser-source synchronization,
-root-security invariants, package contents, and whitespace errors.
+RustSec audit status, JavaScript syntax, browser security tests,
+browser-source synchronization, root-security invariants, package contents, and
+whitespace errors.
+
+At the time of the 0.3.0 release-readiness pass, `cargo audit` must report no
+known vulnerabilities. The remaining `rustls-pemfile` unmaintained advisory is
+tracked as an allowed warning until the TLS PEM-loading path is replaced or an
+actively maintained replacement is selected.
 
 ## Versions and Changelogs
 
@@ -91,6 +97,8 @@ root-security invariants, package contents, and whitespace errors.
 
 ## Security and Cost Review
 
+- [ ] `cargo audit` reports no vulnerabilities. Any non-vulnerability warnings
+      are explicitly documented in the release notes or follow-up plan.
 - [ ] Default binding remains loopback-only.
 - [ ] Default startup is read-only, creates no token file, and does not mount
       mutating, sensitive-read, canonical-write, derived-state, or

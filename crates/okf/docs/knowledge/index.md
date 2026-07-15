@@ -3,7 +3,7 @@ title: Open Knowledge Format Documentation
 kind: knowledge-index
 topic: okf
 status: active
-updated: 2026-07-02
+updated: 2026-07-15
 ---
 
 # Open Knowledge Format Documentation
@@ -30,6 +30,7 @@ human-maintained Markdown knowledge.
 - [OKF HTTP server plan](plans/okf-http-server-plan.md)
 - [OKF community readiness remediation plan](plans/okf-community-readiness-plan.md)
 - [OKF versioning and release roadmap](plans/versioning-roadmap.md)
+- [Post-extraction release follow-up plan](plans/post-extraction-release-follow-up-plan.md)
 - [Local access, authentication, and TLS plan](plans/local-access-authentication-and-tls-plan.md)
 - [Secure document root onboarding plan](plans/secure-document-root-onboarding-plan.md)
 - [Upstream knowledge-catalog index](references/upstream-knowledge-catalog-index.md)

@@ -2261,7 +2261,7 @@ fn root_monitoring_check_response(state: &AppState, id: &str) -> Response {
     };
     let root = match monitored_browser_root(state, id) {
         Ok(root) => root,
-        Err(response) => return response,
+        Err(response) => return *response,
     };
     match monitor.scan(&root) {
         Ok(pending) => api_response(pending),
@@ -2312,7 +2312,7 @@ async fn api_root_monitoring_accept(
         };
         let root = match monitored_browser_root(&state, &id) {
             Ok(root) => root,
-            Err(response) => return response,
+            Err(response) => return *response,
         };
         match monitor.accept(&root, &request.snapshot_digest) {
             Ok(reviewed) => api_response(serde_json::json!({
@@ -2358,21 +2358,30 @@ async fn api_root_monitoring_dismiss(
     }
 }
 
-fn monitored_browser_root(state: &AppState, id: &str) -> Result<BrowserRoot, Response> {
-    let config = load_browser_config(&state.env_file)
-        .map_err(|error| api_error(StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))?;
+fn monitored_browser_root(state: &AppState, id: &str) -> Result<BrowserRoot, Box<Response>> {
+    let config = load_browser_config(&state.env_file).map_err(|error| {
+        Box::new(api_error(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            error.to_string(),
+        ))
+    })?;
     let root = config
         .roots()
         .iter()
         .find(|root| root.root_id.to_string() == id)
         .cloned()
-        .ok_or_else(|| api_error(StatusCode::NOT_FOUND, "configured root not found"))?;
+        .ok_or_else(|| {
+            Box::new(api_error(
+                StatusCode::NOT_FOUND,
+                "configured root not found",
+            ))
+        })?;
     if !root.enabled || !root.check_for_changes {
-        return Err(api_error_named(
+        return Err(Box::new(api_error_named(
             StatusCode::CONFLICT,
             "root_monitoring_disabled",
             "change detection is not enabled for this root",
-        ));
+        )));
     }
     Ok(root)
 }
@@ -9466,12 +9475,12 @@ OKF_VOYAGE_RPM_LIMIT=45
         });
         let monitor = RootMonitor::open(&root.join("state")).unwrap();
         for _ in 0..100 {
-            if monitor.status(&[configured.clone()]).unwrap()[0].initialized {
+            if monitor.status(std::slice::from_ref(&configured)).unwrap()[0].initialized {
                 break;
             }
             std::thread::sleep(Duration::from_millis(10));
         }
-        assert!(monitor.status(&[configured.clone()]).unwrap()[0].initialized);
+        assert!(monitor.status(std::slice::from_ref(&configured)).unwrap()[0].initialized);
 
         let admitted = router
             .clone()

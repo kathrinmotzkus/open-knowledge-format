@@ -23,6 +23,14 @@ pre-1.0 period, a minor release may contain breaking changes.
   linked guide; configuration forms and details render only after login or
   local-editor pairing.
 
+### Security
+
+- Updated the pinned `time` dependency from 0.3.41 to 0.3.47 to resolve the
+  RustSec stack-exhaustion advisory inherited through TLS/X.509 dependencies.
+- Added `cargo audit` to the release gate so dependency vulnerabilities are
+  checked together with formatting, Clippy, tests, browser security checks, and
+  package-content checks.
+
 ## [0.3.0] - 2026-07-02
 
 This release completes the local-access/authentication/TLS and secure document

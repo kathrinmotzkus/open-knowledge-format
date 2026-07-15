@@ -344,7 +344,7 @@ fn validate_trusted_proxy_request(
     let proxy = state.trusted_proxy.as_ref()?;
     let host = match single_header(headers, header::HOST) {
         Ok(value) => value,
-        Err(response) => return Some(response),
+        Err(response) => return Some(*response),
     };
     if !host.eq_ignore_ascii_case(&state.expected_host) {
         return Some(api_error(
@@ -354,14 +354,14 @@ fn validate_trusted_proxy_request(
     }
     let token = match single_header(headers, TRUSTED_PROXY_TOKEN_HEADER) {
         Ok(value) => value,
-        Err(response) => return Some(response),
+        Err(response) => return Some(*response),
     };
     if !constant_time_eq(token.as_bytes(), proxy.token().as_bytes()) {
         return Some(api_error(StatusCode::FORBIDDEN, "untrusted reverse proxy"));
     }
     let forwarded_proto = match single_header(headers, "x-forwarded-proto") {
         Ok(value) => value,
-        Err(response) => return Some(response),
+        Err(response) => return Some(*response),
     };
     if forwarded_proto != "https" {
         return Some(api_error(
@@ -371,7 +371,7 @@ fn validate_trusted_proxy_request(
     }
     let forwarded_host = match single_header(headers, "x-forwarded-host") {
         Ok(value) => value,
-        Err(response) => return Some(response),
+        Err(response) => return Some(*response),
     };
     if !forwarded_host.eq_ignore_ascii_case(proxy.public_authority()) {
         return Some(api_error(
@@ -420,29 +420,32 @@ fn validate_trusted_proxy_request(
 fn single_header(
     headers: &HeaderMap,
     name: impl axum::http::header::AsHeaderName,
-) -> Result<&str, Response> {
+) -> Result<&str, Box<Response>> {
     let values = headers.get_all(name);
     let mut values = values.iter();
     let Some(value) = values.next() else {
-        return Err(api_error(
+        return Err(Box::new(api_error(
             StatusCode::FORBIDDEN,
             "required proxy header is missing",
-        ));
+        )));
     };
     if values.next().is_some() {
-        return Err(api_error(
+        return Err(Box::new(api_error(
             StatusCode::FORBIDDEN,
             "ambiguous repeated proxy header",
-        ));
+        )));
     }
-    let value = value
-        .to_str()
-        .map_err(|_| api_error(StatusCode::FORBIDDEN, "proxy header is not valid text"))?;
+    let value = value.to_str().map_err(|_| {
+        Box::new(api_error(
+            StatusCode::FORBIDDEN,
+            "proxy header is not valid text",
+        ))
+    })?;
     if value.contains(',') || value.trim() != value || value.is_empty() {
-        return Err(api_error(
+        return Err(Box::new(api_error(
             StatusCode::FORBIDDEN,
             "ambiguous proxy header value",
-        ));
+        )));
     }
     Ok(value)
 }
