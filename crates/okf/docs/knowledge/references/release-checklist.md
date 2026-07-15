@@ -4,16 +4,16 @@ type: Checklist
 kind: knowledge-reference
 topic: okf-release
 status: active
-updated: 2026-07-01
+updated: 2026-07-15
 tags: [okf, release, ci, security, packaging]
 ---
 
 # OKF Community Release Checklist
 
 This checklist covers source and binary community releases of
-`okf-open-knowledge-format` and `okf-http`. Publishing to crates.io remains a
-separate future decision. The library package exports the Rust crate name
-`okf`.
+`okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.0`
+has been published on crates.io; `okf-http` remains a separate publication
+decision. The library package exports the Rust crate name `okf`.
 
 ## Clean Source
 
@@ -68,14 +68,13 @@ actively maintained replacement is selected.
 ## Package Contents
 
 - [ ] `scripts/check-okf-package-contents.sh` passes.
-- [ ] Cargo can build the `okf-open-knowledge-format` `.crate` archive offline
-      with
-      `--locked --no-verify`.
-- [ ] `okf-http` has a versioned local `okf-open-knowledge-format` dependency
+- [ ] Cargo can build the `okf-open-knowledge-format` `.crate` archive with
+      `--locked --no-verify`, and `cargo publish -p
+      okf-open-knowledge-format --dry-run --locked` passes before publication.
+- [ ] `okf-http` has a versioned `okf-open-knowledge-format` dependency
       aliased as `okf`, and its complete package list passes. Building its
-      registry archive remains part of the future crates.io publication
-      sequence because `okf-open-knowledge-format` is intentionally unpublished
-      during this source/binary release phase.
+      registry archive is now possible because `okf-open-knowledge-format
+      0.3.0` is published.
 - [ ] Both package lists contain their license, README, and changelog.
 - [ ] `okf-open-knowledge-format` contains its documentation, contribution
       guide, security policy, versioning roadmap, library sources, and offline

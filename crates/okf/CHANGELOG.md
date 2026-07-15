@@ -8,6 +8,16 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+No unreleased changes yet.
+
+## [0.3.0] - 2026-07-15
+
+This release publishes the extracted OKF library as
+`okf-open-knowledge-format` on crates.io. It establishes the format, identity,
+admission, compliance, proposal, configuration, and transactional foundations
+used by secure standalone OKF root onboarding. It is a pre-1.0 minor release
+and may contain intentional API changes from the earlier extraction snapshot.
+
 ### Changed
 
 - Moved `okf`, `okf-http`, their browser, release tooling, and documentation
@@ -21,13 +31,6 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 - Added stable `okf://<mount>/<relative-path>` logical document URIs without
   exposing physical filesystem paths.
-
-## [0.3.0] - 2026-07-02
-
-This release establishes the format, identity, admission, compliance, proposal,
-configuration, and transactional foundations used by secure standalone OKF
-root onboarding. It is a pre-1.0 minor release and may contain intentional API
-changes from the earlier extraction snapshot.
 
 ### Added
 

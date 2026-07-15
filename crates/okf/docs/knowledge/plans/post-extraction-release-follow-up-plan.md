@@ -32,13 +32,14 @@ their order explicit.
 - `cargo audit` reports no known vulnerabilities.
 - The remaining `rustls-pemfile` advisory is an unmaintained-warning, not a
   vulnerability, and is tracked below.
-- `okf-open-knowledge-format` can be packaged locally as a `.crate`.
-- `okf-http` cannot be fully registry-packaged until
-  `okf-open-knowledge-format 0.3.0` is published, because its dependency
-  declaration correctly resolves `okf-open-knowledge-format = "^0.3.0"` from
-  crates.io during package verification.
+- `okf-open-knowledge-format 0.3.0` is published on crates.io and tagged as
+  `okf-open-knowledge-format-v0.3.0`.
+- `okf-http` can now be tested against the published library package during
+  packaging and dry-run verification.
 
 ## Phase 1: Publishable `okf-open-knowledge-format` Library Boundary
+
+Status: completed for `0.3.0`.
 
 - Review the public Rust API exposed by `okf`.
 - Decide which APIs are intended to remain stable through the 0.3.x line.
@@ -55,6 +56,9 @@ Completion criteria:
 
 ## Phase 2: Publish `okf-open-knowledge-format 0.3.0`
 
+Status: completed. crates.io resolves `okf-open-knowledge-format = "0.3.0"`,
+and the release tag is `okf-open-knowledge-format-v0.3.0`.
+
 - Publish `okf-open-knowledge-format` first, because `okf-http` depends on it
   by version.
 - Verify crates.io shows `okf-open-knowledge-format 0.3.0`.
@@ -65,6 +69,11 @@ Completion criteria:
 - crates.io can resolve `okf-open-knowledge-format = "^0.3.0"`.
 
 ## Phase 3: Package and Publish `okf-http`
+
+Status: packaging dry-run completed. `cargo publish -p okf-http --dry-run
+--locked` verifies successfully against the published
+`okf-open-knowledge-format 0.3.0` crate. The remaining decision is whether to
+publish `okf-http` through crates.io, GitHub release binaries, or both.
 
 - Re-run `cargo package -p okf-http --locked --no-verify` after
   `okf-open-knowledge-format 0.3.0` exists on crates.io.
@@ -88,11 +97,11 @@ okf = { package = "okf-open-knowledge-format", version = "0.3.0", path = "../ope
 Planned transition:
 
 1. Keep the local path while both repositories are developed together.
-2. Replace it with a Git dependency if scanlab should follow OKF before a
-   crates.io release.
-3. Replace it with
+2. Replace it with
    `okf = { package = "okf-open-knowledge-format", version = "0.3" }` after
    `okf-open-knowledge-format 0.3.0` is published.
+3. Use a Git dependency only if scanlab needs unreleased OKF changes before
+   the next crates.io release.
 
 Completion criteria:
 
