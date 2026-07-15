@@ -8,35 +8,13 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
-### Changed
+No unreleased changes yet.
 
-- Moved `okf-http` and its browser into the independent
-  `open-knowledge-format` workspace.
-- Updated package metadata for independent publication on crates.io.
-- Added the standalone project installer, including explicit one-time cleanup
-  of the former scanlab-owned system installation.
-- Changed browser navigation to follow actual mounted directory structure;
-  frontmatter topics no longer create synthetic navigation folders.
-- Collapsed unrelated navigation directories by default while keeping the
-  current document ancestry and directories containing search matches open.
-- Reduced anonymous document-root management to an authentication notice and
-  linked guide; configuration forms and details render only after login or
-  local-editor pairing.
+## [0.3.0] - 2026-07-15
 
-### Security
-
-- Updated the pinned `time` dependency from 0.3.41 to 0.3.47 to resolve the
-  RustSec stack-exhaustion advisory inherited through TLS/X.509 dependencies.
-- Added `cargo audit` to the release gate so dependency vulnerabilities are
-  checked together with formatting, Clippy, tests, browser security checks, and
-  package-content checks.
-- Switched the internal OKF dependency to the publishable package name
-  `okf-open-knowledge-format` while keeping the local crate alias `okf`.
-
-## [0.3.0] - 2026-07-02
-
-This release completes the local-access/authentication/TLS and secure document
-root onboarding plans. It is a pre-1.0 minor release because it adds substantial
+This release publishes `okf-http` as the standalone local HTTP server for OKF.
+It completes the local-access/authentication/TLS and secure document-root
+onboarding plans. It is a pre-1.0 minor release because it adds substantial
 HTTP, browser, configuration, security, and persistent-state contracts.
 
 ### Added
@@ -110,6 +88,18 @@ HTTP, browser, configuration, security, and persistent-state contracts.
 
 ### Changed
 
+- Moved `okf-http` and its browser into the independent
+  `open-knowledge-format` workspace.
+- Updated package metadata for independent publication on crates.io.
+- Added the standalone project installer, including explicit one-time cleanup
+  of the former scanlab-owned system installation.
+- Changed browser navigation to follow actual mounted directory structure;
+  frontmatter topics no longer create synthetic navigation folders.
+- Collapsed unrelated navigation directories by default while keeping the
+  current document ancestry and directories containing search matches open.
+- Reduced anonymous document-root management to an authentication notice and
+  linked guide; configuration forms and details render only after login or
+  local-editor pairing.
 - Retired direct browser mutation through `/config/roots`; mutation aliases now
   return `410 Gone`, while `.env` remains console-owned and read-only to HTTP.
 - Made read-only operation the default, added explicit loopback-only
@@ -128,3 +118,13 @@ HTTP, browser, configuration, security, and persistent-state contracts.
   making them part of generic OKF behavior.
 - Established `okf-http` as independently versioned from both scanlab and the
   `okf` library.
+
+### Security
+
+- Updated the pinned `time` dependency from 0.3.41 to 0.3.47 to resolve the
+  RustSec stack-exhaustion advisory inherited through TLS/X.509 dependencies.
+- Added `cargo audit` to the release gate so dependency vulnerabilities are
+  checked together with formatting, Clippy, tests, browser security checks, and
+  package-content checks.
+- Switched the internal OKF dependency to the publishable package name
+  `okf-open-knowledge-format` while keeping the local crate alias `okf`.
