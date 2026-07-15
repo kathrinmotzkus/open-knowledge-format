@@ -1,7 +1,9 @@
 # OKF
 
 `okf` is a filesystem-backed knowledge-document library for Markdown
-repositories.
+repositories. The crates.io package name is `okf-open-knowledge-format`; the
+Rust library crate is still named `okf`, so downstream code can continue to
+write `use okf::...`.
 
 It provides:
 

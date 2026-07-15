@@ -89,7 +89,8 @@ License 2.0 text as `LICENSE`.
 
 Completion criteria:
 
-- `cargo package -p okf --allow-dirty --list` includes the license.
+- `cargo package -p okf-open-knowledge-format --allow-dirty --list` includes
+  the license.
 - `cargo package -p okf-http --allow-dirty --list` includes the license and
   server sources. Browser asset packaging and provisioning are completed in
   Phase 3.

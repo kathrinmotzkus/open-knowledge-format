@@ -23,47 +23,51 @@ their order explicit.
 
 ## Current Release-Readiness Baseline
 
-- `okf` and `okf-http` are independent workspace members in
-  `open-knowledge-format`.
+- `okf-open-knowledge-format` and `okf-http` are independent workspace members
+  in `open-knowledge-format`. The library package exports the Rust crate name
+  `okf`.
 - The release gate includes formatting, strict Clippy, RustSec audit,
   locked/offline tests, browser security checks, browser asset synchronization,
   root-security checks, package-content checks, and whitespace checks.
 - `cargo audit` reports no known vulnerabilities.
 - The remaining `rustls-pemfile` advisory is an unmaintained-warning, not a
   vulnerability, and is tracked below.
-- `okf` can be packaged locally as a `.crate`.
-- `okf-http` cannot be fully registry-packaged until `okf 0.3.0` is published,
-  because its dependency declaration correctly resolves `okf = "^0.3.0"` from
+- `okf-open-knowledge-format` can be packaged locally as a `.crate`.
+- `okf-http` cannot be fully registry-packaged until
+  `okf-open-knowledge-format 0.3.0` is published, because its dependency
+  declaration correctly resolves `okf-open-knowledge-format = "^0.3.0"` from
   crates.io during package verification.
 
-## Phase 1: Publishable `okf` Library Boundary
+## Phase 1: Publishable `okf-open-knowledge-format` Library Boundary
 
 - Review the public Rust API exposed by `okf`.
 - Decide which APIs are intended to remain stable through the 0.3.x line.
 - Confirm package metadata, README, license, security policy, contribution
   guide, and changelog.
-- Run `cargo package -p okf --locked --no-verify`.
-- Optionally run `cargo publish -p okf --dry-run` before the real publish.
+- Run `cargo package -p okf-open-knowledge-format --locked --no-verify`.
+- Optionally run `cargo publish -p okf-open-knowledge-format --dry-run` before
+  the real publish.
 
 Completion criteria:
 
-- `okf` is ready to publish as `0.3.0`.
+- `okf-open-knowledge-format` is ready to publish as `0.3.0`.
 - The release notes identify breaking pre-1.0 API and format changes.
 
-## Phase 2: Publish `okf 0.3.0`
+## Phase 2: Publish `okf-open-knowledge-format 0.3.0`
 
-- Publish `okf` first, because `okf-http` depends on it by version.
-- Verify crates.io shows `okf 0.3.0`.
+- Publish `okf-open-knowledge-format` first, because `okf-http` depends on it
+  by version.
+- Verify crates.io shows `okf-open-knowledge-format 0.3.0`.
 - Tag the library release if the release process uses component tags.
 
 Completion criteria:
 
-- crates.io can resolve `okf = "^0.3.0"`.
+- crates.io can resolve `okf-open-knowledge-format = "^0.3.0"`.
 
 ## Phase 3: Package and Publish `okf-http`
 
-- Re-run `cargo package -p okf-http --locked --no-verify` after `okf 0.3.0`
-  exists on crates.io.
+- Re-run `cargo package -p okf-http --locked --no-verify` after
+  `okf-open-knowledge-format 0.3.0` exists on crates.io.
 - Confirm the packaged browser assets and standalone tests are included.
 - Decide whether `okf-http` should be distributed through crates.io, GitHub
   release binaries, or both.
@@ -78,7 +82,7 @@ Completion criteria:
 Current scanlab dependency:
 
 ```toml
-okf = { version = "0.3.0", path = "../open-knowledge-format/crates/okf" }
+okf = { package = "okf-open-knowledge-format", version = "0.3.0", path = "../open-knowledge-format/crates/okf" }
 ```
 
 Planned transition:
@@ -86,7 +90,9 @@ Planned transition:
 1. Keep the local path while both repositories are developed together.
 2. Replace it with a Git dependency if scanlab should follow OKF before a
    crates.io release.
-3. Replace it with `okf = "0.3"` after `okf 0.3.0` is published.
+3. Replace it with
+   `okf = { package = "okf-open-knowledge-format", version = "0.3" }` after
+   `okf-open-knowledge-format 0.3.0` is published.
 
 Completion criteria:
 
@@ -176,7 +182,7 @@ Completion criteria:
 - Decide whether `cargo audit` warnings should fail CI or be allowlisted by an
   explicit audit policy file.
 - Add a release job or checklist step for publishing order:
-  1. `okf`
+  1. `okf-open-knowledge-format`
   2. `okf-http`
   3. downstream scanlab dependency update
 - Keep live Voyage AI tests opt-in and ignored by default.

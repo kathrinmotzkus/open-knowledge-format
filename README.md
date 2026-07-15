@@ -4,7 +4,9 @@ This repository contains the independently versioned Open Knowledge Format
 workspace.
 
 - [`okf`](crates/okf/README.md) is the filesystem-backed document model and
-  repository library.
+  repository library. Its crates.io package name is
+  `okf-open-knowledge-format`; the Rust library crate is still imported as
+  `okf`.
 - [`okf-http`](crates/okf-http/README.md) provides the local HTTP server,
   browser, protected editing workflows, and optional semantic-analysis APIs.
 - [`docs-browser`](docs-browser/README.md) contains the development copy of

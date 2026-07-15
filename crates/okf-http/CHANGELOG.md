@@ -30,6 +30,8 @@ pre-1.0 period, a minor release may contain breaking changes.
 - Added `cargo audit` to the release gate so dependency vulnerabilities are
   checked together with formatting, Clippy, tests, browser security checks, and
   package-content checks.
+- Switched the internal OKF dependency to the publishable package name
+  `okf-open-knowledge-format` while keeping the local crate alias `okf`.
 
 ## [0.3.0] - 2026-07-02
 

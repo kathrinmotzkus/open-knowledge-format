@@ -14,6 +14,8 @@ pre-1.0 period, a minor release may contain breaking changes.
   from the scanlab workspace into the independent
   `open-knowledge-format` repository.
 - Updated package metadata for independent publication on crates.io.
+- Renamed the crates.io package to `okf-open-knowledge-format` while keeping
+  the Rust library crate name `okf` for source compatibility.
 
 ### Added
 

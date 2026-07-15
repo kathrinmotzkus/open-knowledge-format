@@ -1,5 +1,5 @@
 [package]
-name = "okf"
+name = "okf-open-knowledge-format"
 version = "0.3.0"
 edition = "2021"
 rust-version = "1.85"
@@ -13,6 +13,7 @@ keywords = ["knowledge", "markdown", "frontmatter", "documentation"]
 categories = ["text-processing", "filesystem"]
 
 [lib]
+name = "okf"
 path = "src/lib.rs"
 
 [dependencies]

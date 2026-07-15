@@ -731,19 +731,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "okf"
-version = "0.3.0"
-dependencies = [
- "getrandom",
- "libc",
- "serde",
- "serde_json",
- "sha2",
- "toml_dom",
- "unicode-normalization",
-]
-
-[[package]]
 name = "okf-http"
 version = "0.3.0"
 dependencies = [
@@ -751,7 +738,7 @@ dependencies = [
  "axum",
  "axum-server",
  "getrandom",
- "okf",
+ "okf-open-knowledge-format",
  "rcgen",
  "rpassword",
  "rusqlite",
@@ -765,6 +752,19 @@ dependencies = [
  "tower",
  "x509-parser 0.18.1",
  "zeroize",
+]
+
+[[package]]
+name = "okf-open-knowledge-format"
+version = "0.3.0"
+dependencies = [
+ "getrandom",
+ "libc",
+ "serde",
+ "serde_json",
+ "sha2",
+ "toml_dom",
+ "unicode-normalization",
 ]
 
 [[package]]

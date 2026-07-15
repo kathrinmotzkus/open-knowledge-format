@@ -10,8 +10,10 @@ tags: [okf, release, ci, security, packaging]
 
 # OKF Community Release Checklist
 
-This checklist covers source and binary community releases of `okf` and
-`okf-http`. Publishing to crates.io remains a separate future decision.
+This checklist covers source and binary community releases of
+`okf-open-knowledge-format` and `okf-http`. Publishing to crates.io remains a
+separate future decision. The library package exports the Rust crate name
+`okf`.
 
 ## Clean Source
 
@@ -45,8 +47,9 @@ actively maintained replacement is selected.
 
 ## Versions and Changelogs
 
-- [ ] The `okf` and `okf-http` versions reflect their independent release
-      scopes; matching versions are never assumed automatically.
+- [ ] The `okf-open-knowledge-format` and `okf-http` versions reflect their
+      independent release scopes; matching versions are never assumed
+      automatically.
 - [ ] Every internal version requirement accepts exactly the intended release.
 - [ ] Each component's `Unreleased` entries have moved into a dated release
       section without deleting the new empty `Unreleased` section.
@@ -65,15 +68,18 @@ actively maintained replacement is selected.
 ## Package Contents
 
 - [ ] `scripts/check-okf-package-contents.sh` passes.
-- [ ] Cargo can build the `okf` `.crate` archive offline with
+- [ ] Cargo can build the `okf-open-knowledge-format` `.crate` archive offline
+      with
       `--locked --no-verify`.
-- [ ] `okf-http` has a versioned local `okf` dependency and its complete package
-      list passes. Building its registry archive remains part of the future
-      crates.io publication sequence because `okf` is intentionally unpublished
+- [ ] `okf-http` has a versioned local `okf-open-knowledge-format` dependency
+      aliased as `okf`, and its complete package list passes. Building its
+      registry archive remains part of the future crates.io publication
+      sequence because `okf-open-knowledge-format` is intentionally unpublished
       during this source/binary release phase.
 - [ ] Both package lists contain their license, README, and changelog.
-- [ ] `okf` contains its documentation, contribution guide, security policy,
-      versioning roadmap, library sources, and offline tests.
+- [ ] `okf-open-knowledge-format` contains its documentation, contribution
+      guide, security policy, versioning roadmap, library sources, and offline
+      tests.
 - [ ] `okf-http` contains all browser assets, the browser security test, and
       the standalone packaged-installation test.
 - [ ] No `.env`, API key, `.okf-voyage/`, SQLite/WAL/SHM database, accepted-edge

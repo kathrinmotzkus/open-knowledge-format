@@ -4,9 +4,9 @@ set -eu
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/okf-package-check.XXXXXX")
 trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
 
-cargo package -p okf --allow-dirty --list >"$work_dir/okf.list"
+cargo package -p okf-open-knowledge-format --allow-dirty --list >"$work_dir/okf.list"
 cargo package -p okf-http --allow-dirty --list >"$work_dir/okf-http.list"
-CARGO_NET_OFFLINE=true cargo package -p okf --allow-dirty --locked --no-verify
+CARGO_NET_OFFLINE=true cargo package -p okf-open-knowledge-format --allow-dirty --locked --no-verify
 
 require_entry() {
     package_list=$1
