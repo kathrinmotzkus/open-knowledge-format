@@ -10,6 +10,16 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 No unreleased changes yet.
 
+## [0.3.1] - 2026-07-15
+
+### Fixed
+
+- Clarified the crates.io installation path:
+  `cargo install okf-http --locked`, followed by
+  `okf-http --install-browser`.
+- Clarified the difference between installing from crates.io and installing
+  from a GitHub source checkout.
+
 ## [0.3.0] - 2026-07-15
 
 This release publishes `okf-http` as the standalone local HTTP server for OKF.

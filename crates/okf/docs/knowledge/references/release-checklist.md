@@ -11,8 +11,8 @@ tags: [okf, release, ci, security, packaging]
 # OKF Community Release Checklist
 
 This checklist covers source and binary community releases of
-`okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.0`
-and `okf-http 0.3.0` have been published on crates.io. The library package
+`okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.1`
+and `okf-http 0.3.1` have been published on crates.io. The library package
 exports the Rust crate name `okf`.
 
 ## Clean Source

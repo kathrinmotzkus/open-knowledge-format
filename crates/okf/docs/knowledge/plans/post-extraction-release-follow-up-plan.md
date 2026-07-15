@@ -34,6 +34,8 @@ their order explicit.
   vulnerability, and is tracked below.
 - `okf-open-knowledge-format 0.3.0` is published on crates.io and tagged as
   `okf-open-knowledge-format-v0.3.0`.
+- `okf-open-knowledge-format 0.3.1` is the documentation patch release for the
+  crates.io installation path.
 - `okf-http` can now be tested against the published library package during
   packaging and dry-run verification.
 
@@ -71,9 +73,10 @@ Completion criteria:
 ## Phase 3: Package and Publish `okf-http`
 
 Status: completed for crates.io. `okf-http 0.3.0` is published on crates.io and
-tagged as `okf-http-v0.3.0`. It verifies successfully against the published
-`okf-open-knowledge-format 0.3.0` crate. GitHub release binaries remain an
-optional future distribution channel.
+tagged as `okf-http-v0.3.0`; `okf-http 0.3.1` is the documentation patch
+release for the crates.io installation path. It verifies successfully against
+the published `okf-open-knowledge-format` crate. GitHub release binaries remain
+an optional future distribution channel.
 
 - Re-run `cargo package -p okf-http --locked --no-verify` after
   `okf-open-knowledge-format 0.3.0` exists on crates.io.
