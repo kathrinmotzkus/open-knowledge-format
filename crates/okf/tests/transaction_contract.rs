@@ -294,6 +294,7 @@ fn startup_recovery_restores_an_interrupted_external_journal() {
     fs::create_dir_all(state.join("backup")).unwrap();
     fs::create_dir_all(state.join("staged")).unwrap();
     fs::create_dir_all(&root).unwrap();
+    let canonical_root = root.canonicalize().unwrap();
     fs::write(root.join("document.md"), "after").unwrap();
     fs::write(state.join("backup/0"), "before").unwrap();
     fs::write(state.join("staged/0"), "after").unwrap();
@@ -303,7 +304,7 @@ fn startup_recovery_restores_an_interrupted_external_journal() {
         serde_json::to_vec_pretty(&serde_json::json!({
             "version": 1,
             "status": "applying",
-            "root": root,
+            "root": canonical_root,
             "entries": [{
                 "path": "document.md",
                 "had_original": true,
