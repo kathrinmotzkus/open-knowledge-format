@@ -12,11 +12,20 @@ struct TestDirectory(PathBuf);
 
 impl TestDirectory {
     fn new(name: &str) -> Self {
+        Self::new_under(std::env::temp_dir(), name)
+    }
+
+    #[cfg(unix)]
+    fn new_short(name: &str) -> Self {
+        Self::new_under(PathBuf::from("/tmp"), name)
+    }
+
+    fn new_under(base: PathBuf, name: &str) -> Self {
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("system time")
             .as_nanos();
-        let path = std::env::temp_dir().join(format!("okf-admission-{name}-{unique}"));
+        let path = base.join(format!("okf-admission-{name}-{unique}"));
         fs::create_dir_all(&path).expect("create fixture root");
         Self(path)
     }
@@ -104,24 +113,38 @@ fn hidden_paths_and_collisions_never_enter_the_accepted_inventory() {
     fs::create_dir(root.path().join(".ssh")).expect("hidden directory");
     fs::write(root.path().join(".ssh/id.md"), "# Never scanned\n").expect("nested hidden");
     fs::create_dir(root.path().join("Docs")).expect("Docs");
-    fs::create_dir(root.path().join("docs")).expect("docs");
-    fs::write(root.path().join("Docs/Überblick.md"), "# One\n").expect("first collision");
-    fs::write(root.path().join("docs/U\u{308}BERBLICK.md"), "# Two\n").expect("second collision");
+    let collision_fixture_available = fs::create_dir(root.path().join("docs")).is_ok();
+    if collision_fixture_available {
+        fs::write(root.path().join("Docs/Überblick.md"), "# One\n").expect("first collision");
+        fs::write(root.path().join("docs/U\u{308}BERBLICK.md"), "# Two\n")
+            .expect("second collision");
+    }
 
     let inventory = scan_document_root(root.path(), AdmissionLimits::default()).expect("scan");
-    assert!(inventory.accepted().is_empty());
     let rejected = rejection_map(&inventory);
     assert_eq!(rejected[".env"], &RejectionReason::HiddenPath);
     assert_eq!(rejected[".ssh"], &RejectionReason::HiddenPath);
     assert!(!rejected.contains_key(".ssh/id.md"));
-    assert_eq!(
-        rejected["Docs/Überblick.md"],
-        &RejectionReason::PathCollision
-    );
-    assert_eq!(
-        rejected["docs/U\u{308}BERBLICK.md"],
-        &RejectionReason::PathCollision
-    );
+    if collision_fixture_available {
+        assert!(inventory.accepted().is_empty());
+        assert_eq!(
+            rejected["Docs/Überblick.md"],
+            &RejectionReason::PathCollision
+        );
+        assert_eq!(
+            rejected["docs/U\u{308}BERBLICK.md"],
+            &RejectionReason::PathCollision
+        );
+    } else {
+        assert_eq!(
+            inventory
+                .accepted()
+                .iter()
+                .map(|file| file.path().as_str())
+                .collect::<Vec<_>>(),
+            Vec::<&str>::new()
+        );
+    }
 }
 
 #[cfg(unix)]
@@ -132,7 +155,7 @@ fn symlinks_sockets_executables_and_non_utf8_names_are_rejected() {
     use std::os::unix::fs::{symlink, PermissionsExt};
     use std::os::unix::net::UnixListener;
 
-    let root = TestDirectory::new("unix-kinds");
+    let root = TestDirectory::new_short("unix-kinds");
     fs::write(root.path().join("target.md"), "# Target\n").expect("target");
     symlink("target.md", root.path().join("inside-link.md")).expect("inside symlink");
     let socket_path = root.path().join("service.md");
