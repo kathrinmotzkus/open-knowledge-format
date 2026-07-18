@@ -106,7 +106,7 @@ jobs:
           - component: okf
             rust: "1.85"
           - component: okf-http
-            rust: "1.85"
+            rust: "1.88"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

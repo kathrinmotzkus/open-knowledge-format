@@ -130,8 +130,9 @@ HTTP, browser, configuration, security, and persistent-state contracts.
   browser.
 - Protected sensitive root-configuration reads with the same authorization
   boundary as other local-editor operations.
-- Standardized the workspace MSRV on Rust 1.85 while retaining the maintained
-  `axum-server` 0.8 TLS stack.
+- Kept the core OKF library MSRV on Rust 1.85 and raised the `okf-http` MSRV to
+  Rust 1.88 so the maintained `axum-server` 0.8 TLS stack can use
+  advisory-fixed `time` releases.
 - Made plain HTTP loopback-only and require authenticated TLS, explicit opt-in,
   a concrete bind address, and explicit automation authority for remote binds.
 - Replaced the Python development-server workflow with an installable Rust

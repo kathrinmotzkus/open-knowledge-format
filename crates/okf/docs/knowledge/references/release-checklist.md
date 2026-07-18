@@ -60,7 +60,7 @@ does not depend on the unmaintained `rustls-pemfile` crate.
 ## Minimum Rust and Platforms
 
 - [ ] `RUSTUP_TOOLCHAIN=1.85 scripts/check-okf-msrv.sh okf` passes.
-- [ ] `RUSTUP_TOOLCHAIN=1.85 scripts/check-okf-msrv.sh okf-http` passes.
+- [ ] `RUSTUP_TOOLCHAIN=1.88 scripts/check-okf-msrv.sh okf-http` passes.
 - [ ] GitHub Actions passes on Linux and macOS stable Rust.
 - [ ] The CI release-gate job passes with an empty
       `OKF_VOYAGE_API_KEY` and Cargo offline after dependency fetch.

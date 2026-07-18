@@ -356,9 +356,11 @@ Completion criteria:
 - The default read-only installation gains no external system dependency.
 - TLS tests use temporary certificates and do not modify trust stores.
 
-Status: implemented. The workspace now uses Rust 1.85 consistently;
-`okf-http` keeps Axum 0.8.9 and uses maintained `axum-server` 0.8 with Rustls
-and the ring provider. `--authenticated` requires
+Status: implemented. The core OKF library keeps Rust 1.85 as its MSRV.
+`okf-http` uses Rust 1.88 so TLS and certificate handling can stay on
+advisory-fixed dependency versions. `okf-http` keeps Axum 0.8.9 and uses
+maintained `axum-server` 0.8 with Rustls and the ring provider.
+`--authenticated` requires
 explicit PEM certificate and private-key paths. Before binding, startup checks
 regular files, owner-only Unix key permissions, PEM/X.509 parsing, current
 validity, exact DNS/IP SAN coverage for the configured host, certificate/key
@@ -617,9 +619,10 @@ checks, and package-content inspection. It refuses to run with Voyage or proxy
 credentials, never installs trust roots, needs no root privileges or external
 TLS tools, and permits only local test listeners. CI repeats these gates on
 Linux and tests the supported workspace on Linux and macOS, with standalone
-`okf` and `okf-http` checks at Rust 1.85. Installation, getting-started, HTTP
-API, threat model, root onboarding, security policy, changelog, and release
-checklist now describe the tested boundary.
+`okf` checks at Rust 1.85 and standalone `okf-http` checks at Rust 1.88.
+Installation, getting-started, HTTP API, threat model, root onboarding,
+security policy, changelog, and release checklist now describe the tested
+boundary.
 
 ## Dependency Order
 

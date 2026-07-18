@@ -682,9 +682,9 @@ identity, preview, initialization and monitoring contracts. Release automation
 runs formatting, strict Clippy, locked offline workspace tests, browser checks,
 source synchronization, root-security invariants, package-content/secret
 hygiene and whitespace checks. CI additionally runs Linux and macOS, Rust 1.85
-MSRV copies of both standalone crates, package construction, and socket-required
-standalone tests. The paid Voyage test remains opt-in and ordinary gates refuse
-provider credentials.
+MSRV copies of the core OKF library, Rust 1.88 MSRV copies of `okf-http`,
+package construction, and socket-required standalone tests. The paid Voyage
+test remains opt-in and ordinary gates refuse provider credentials.
 
 - Add OKF-core contract tests for identity, paths, admission, nested indexes,
   resources, and proposals.

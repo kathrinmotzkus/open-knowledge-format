@@ -48,7 +48,9 @@ examples.
 
 ## Installation Expectations
 
-Source builds and `cargo install` require Rust 1.85 or newer.
+Source builds for `okf-open-knowledge-format` require Rust 1.85 or newer.
+Source builds and `cargo install` for `okf-http` require Rust 1.88 or newer
+because the HTTP server includes TLS and certificate handling dependencies.
 
 Future release artifacts for `okf-http` should not require Rust on the target
 system. They should allow users to install or run `okf-http` from prebuilt
@@ -66,7 +68,8 @@ The current CI baseline covers:
   - `aarch64-unknown-linux-gnu`
   - `x86_64-apple-darwin`
   - `aarch64-apple-darwin`
-- MSRV checks for `okf-open-knowledge-format` and `okf-http`
+- MSRV checks for `okf-open-knowledge-format` on Rust 1.85 and `okf-http` on
+  Rust 1.88
 - offline tests without Voyage AI credentials
 - optional experimental Windows tests on manual workflow dispatch
 - release-candidate `okf-http` archives with SHA-256 checksums on manual

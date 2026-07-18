@@ -71,9 +71,11 @@ okf-http --install-browser
 
 `cargo install` installs the `okf-http` binary from the published package.
 `okf-http --install-browser` installs the browser assets embedded in that
-binary. This path requires Rust 1.85 or newer because it builds from crates.io.
-Future release archives and packages should not require Rust on the target
-system.
+binary. This path requires Rust 1.88 or newer because it builds the HTTP
+server, including TLS and certificate handling dependencies, from crates.io.
+The core `okf-open-knowledge-format` library itself supports Rust 1.85 or
+newer. Future release archives and packages should not require Rust on the
+target system.
 
 From a GitHub source checkout, use the repository installer from the repository
 root:

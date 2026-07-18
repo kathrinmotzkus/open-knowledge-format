@@ -175,7 +175,16 @@ fn symlinks_sockets_executables_and_non_utf8_names_are_rejected() {
     let non_utf8 = root
         .path()
         .join(OsString::from_vec(b"bad-\xff.md".to_vec()));
-    fs::write(&non_utf8, "# Non UTF-8 path\n").expect("non UTF-8 path");
+    let non_utf8_fixture_available = match fs::write(&non_utf8, "# Non UTF-8 path\n") {
+        Ok(()) => true,
+        Err(error)
+            if error.raw_os_error() == Some(92)
+                || error.kind() == std::io::ErrorKind::InvalidInput =>
+        {
+            false
+        }
+        Err(error) => panic!("non UTF-8 path: {error}"),
+    };
 
     let inventory = scan_document_root(root.path(), AdmissionLimits::default()).expect("scan");
     let rejected = rejection_map(&inventory);
@@ -184,10 +193,12 @@ fn symlinks_sockets_executables_and_non_utf8_names_are_rejected() {
         assert_eq!(rejected["service.md"], &RejectionReason::Socket);
     }
     assert_eq!(rejected["executable.md"], &RejectionReason::Executable);
-    assert!(inventory
-        .rejected()
-        .iter()
-        .any(|entry| entry.reason() == &RejectionReason::NonUtf8Path));
+    if non_utf8_fixture_available {
+        assert!(inventory
+            .rejected()
+            .iter()
+            .any(|entry| entry.reason() == &RejectionReason::NonUtf8Path));
+    }
     assert_eq!(
         inventory
             .accepted()

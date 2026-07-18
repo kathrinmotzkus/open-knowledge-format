@@ -2,7 +2,7 @@
 name = "okf-http"
 version = "0.3.2"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "Apache-2.0"
 authors = ["Kathrin C. Motzkus"]
 description = "HTTP server for browsing and managing Open Knowledge Format repositories."

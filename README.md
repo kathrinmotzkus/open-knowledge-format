@@ -71,15 +71,20 @@ Windows is experimental. It is not rejected, but path handling, service
 integration, browser installation, local TLS, filesystem watching, and shell
 examples still need separate review.
 
-Source builds and `cargo install` require Rust 1.85 or newer. Future prebuilt
-`okf-http` release artifacts should not require Rust on the target system.
+Source builds for the `okf-open-knowledge-format` library require Rust 1.85 or
+newer. Source builds and `cargo install` for `okf-http` require Rust 1.88 or
+newer because the HTTP server includes TLS and certificate handling
+dependencies. Future prebuilt `okf-http` release artifacts should not require
+Rust on the target system.
 See
 [`OKF Platform Support`](crates/okf/docs/knowledge/references/platform-support.md)
 for the current support matrix.
 
 ## Development
 
-The workspace requires Rust 1.85 or newer.
+The workspace requires Rust 1.88 or newer when building all crates. The core
+`okf-open-knowledge-format` library keeps Rust 1.85 as its minimum supported
+Rust version.
 
 ```bash
 cargo test --workspace --locked
