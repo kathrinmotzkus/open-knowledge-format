@@ -675,7 +675,7 @@ fn parse_pem_blocks(pem: &[u8], label: &str) -> Result<Vec<PemBlock>, String> {
 
 fn decode_pem_base64(input: &str, label: &str) -> Result<Vec<u8>, String> {
     let bytes = input.as_bytes();
-    if bytes.is_empty() || bytes.len() % 4 != 0 {
+    if bytes.is_empty() || !bytes.len().is_multiple_of(4) {
         return Err(format!("failed to parse {label} PEM: invalid base64 data"));
     }
 

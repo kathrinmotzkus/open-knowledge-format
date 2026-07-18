@@ -180,20 +180,27 @@ fn proposal_reports_identity_mount_shadowing_and_case_conflicts() {
     fs::create_dir_all(&existing).unwrap();
     write_fixture(&candidate, "01JZY3CONFLICTAAAAAAAAAAA");
     write_fixture(&existing, "01JZY3CONFLICTAAAAAAAAAAA");
-    fs::write(candidate.join("Name.md"), "# One\n").unwrap();
-    fs::write(candidate.join("name.md"), "# Two\n").unwrap();
+    let upper_case_path = candidate.join("Name.md");
+    let lower_case_path = candidate.join("name.md");
+    fs::write(&upper_case_path, "# One\n").unwrap();
+    let case_collision_fixture_available = fs::write(&lower_case_path, "# Two\n").is_ok()
+        && upper_case_path.canonicalize().ok() != lower_case_path.canonicalize().ok();
 
     let mut proposal_request = request(&candidate, RootProposalKind::Registration);
     proposal_request.context.configured_roots = vec![DocumentRoot::mounted("knowledge", &existing)];
     proposal_request.context.dotenv_override_active = true;
     let proposal = build_root_proposal(proposal_request).unwrap();
 
-    for expected in [
+    let mut expected_conflicts = vec![
         ProposalConflictCode::DuplicateRootIdentity,
-        ProposalConflictCode::CaseOrUnicodeCollision,
         ProposalConflictCode::MountCollision,
         ProposalConflictCode::ShadowedPath,
-    ] {
+    ];
+    if case_collision_fixture_available {
+        expected_conflicts.push(ProposalConflictCode::CaseOrUnicodeCollision);
+    }
+
+    for expected in expected_conflicts {
         assert!(proposal
             .conflicts()
             .iter()
