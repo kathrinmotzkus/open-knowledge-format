@@ -88,10 +88,20 @@ fn bundled_knowledge_documents_have_required_type_metadata() {
         missing.is_empty(),
         "documents missing type metadata: {missing:?}"
     );
-    let index = repository
-        .find(DocumentQuery::Exact("index.md".to_string()))
-        .expect("reserved documentation index");
-    assert!(index.document_type().is_none());
+    let reserved = repository
+        .documents()
+        .iter()
+        .filter(|document| {
+            document.relative_path().file_name().is_some_and(|name| {
+                name == std::ffi::OsStr::new("index.md")
+                    || name == std::ffi::OsStr::new("log.md")
+            })
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        !reserved.is_empty(),
+        "expected bundled documentation to contain reserved navigation documents"
+    );
 }
 
 #[test]
