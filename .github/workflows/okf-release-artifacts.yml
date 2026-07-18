@@ -1,0 +1,75 @@
+name: OKF Release Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "okf-http-v*"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  OKF_VOYAGE_API_KEY: ""
+  OKF_HTTP_TRUSTED_PROXY_TOKEN: ""
+
+jobs:
+  okf-http-archives:
+    name: okf-http archive (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - platform: Linux aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - platform: macOS x86_64
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+          - platform: macOS aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+      CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+      AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Install Linux aarch64 cross toolchain
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Cache dependencies for release build
+        run: cargo fetch --locked
+      - name: Build and package okf-http
+        run: scripts/package-okf-http-release.sh ${{ matrix.target }}
+      - name: Upload okf-http archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: okf-http-${{ matrix.target }}
+          path: |
+            dist/okf-http-*-${{ matrix.target }}.tar.gz
+            dist/okf-http-*-${{ matrix.target }}.tar.gz.sha256
+          if-no-files-found: error
+      - name: Build Debian package
+        if: runner.os == 'Linux'
+        run: scripts/package-okf-http-deb.sh ${{ matrix.target }}
+      - name: Upload Debian package
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: okf-http-deb-${{ matrix.target }}
+          path: |
+            dist/deb/okf-http_*.deb
+            dist/deb/okf-http_*.deb.sha256
+          if-no-files-found: error

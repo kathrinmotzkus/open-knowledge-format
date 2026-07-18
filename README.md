@@ -56,6 +56,27 @@ The complete knowledge documentation starts at
 For the conceptual positioning, start with
 [`OKF as a Knowledge Network`](crates/okf/docs/knowledge/concepts/knowledge-networking.md).
 
+## Platform Support
+
+The first supported platform baseline is:
+
+| Platform | Architecture | Rust target |
+| --- | --- | --- |
+| Linux | x86_64 | `x86_64-unknown-linux-gnu` |
+| Linux | aarch64 | `aarch64-unknown-linux-gnu` |
+| macOS | x86_64 | `x86_64-apple-darwin` |
+| macOS | aarch64 | `aarch64-apple-darwin` |
+
+Windows is experimental. It is not rejected, but path handling, service
+integration, browser installation, local TLS, filesystem watching, and shell
+examples still need separate review.
+
+Source builds and `cargo install` require Rust 1.85 or newer. Future prebuilt
+`okf-http` release artifacts should not require Rust on the target system.
+See
+[`OKF Platform Support`](crates/okf/docs/knowledge/references/platform-support.md)
+for the current support matrix.
+
 ## Development
 
 The workspace requires Rust 1.85 or newer.
@@ -103,6 +124,18 @@ assets with:
 ```bash
 okf-http --install-browser
 ```
+
+For early Linux package testing, a local `.deb` package can be built from the
+source checkout:
+
+```bash
+scripts/package-okf-http-deb.sh x86_64-unknown-linux-gnu
+```
+
+The generated package is written to `dist/deb/`. It installs immutable files
+under `/usr/bin`, `/usr/share/okf`, `/usr/share/doc/okf-http`, and systemd
+example units under `/usr/lib/systemd`. It does not create or overwrite user
+content under `/var/lib/okf`, `/etc/okf`, or `~/.config/okf`.
 
 For the one-time migration from the former scanlab-owned installation, use:
 

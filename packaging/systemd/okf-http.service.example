@@ -1,0 +1,18 @@
+[Unit]
+Description=OKF HTTP server
+Documentation=https://github.com/kathrinmotzkus/open-knowledge-format
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/okf-http --browser-root /usr/share/okf/browser --host 127.0.0.1 8003
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/var/lib/okf /etc/okf
+
+[Install]
+WantedBy=multi-user.target

@@ -57,6 +57,11 @@ not spend provider tokens.
 
 ## 1. Install the Binary and Browser
 
+Supported platforms are documented in
+[OKF Platform Support](references/platform-support.md). The first supported
+baseline is Linux x86_64, Linux aarch64, macOS x86_64, and macOS aarch64.
+Windows is currently experimental.
+
 From crates.io:
 
 ```bash
@@ -66,7 +71,9 @@ okf-http --install-browser
 
 `cargo install` installs the `okf-http` binary from the published package.
 `okf-http --install-browser` installs the browser assets embedded in that
-binary.
+binary. This path requires Rust 1.85 or newer because it builds from crates.io.
+Future release archives and packages should not require Rust on the target
+system.
 
 From a GitHub source checkout, use the repository installer from the repository
 root:

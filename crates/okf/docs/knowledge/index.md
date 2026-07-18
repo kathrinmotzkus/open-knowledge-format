@@ -1,5 +1,6 @@
 ---
 title: Open Knowledge Format Documentation
+type: Index
 kind: knowledge-index
 topic: okf
 status: active
@@ -30,13 +31,19 @@ AI suggestions make the knowledge navigable by people, tools, and agents.
 - [Document-root access and authentication](security/document-root-access.md)
 - [Voyage AI analysis layer](integration/voyage-ai-analysis.md)
 - [Migrating from scanlab to standalone OKF](integration/standalone-migration.md)
+- [OKF platform support](references/platform-support.md)
+- [OKF CI-to-VM handoff](references/ci-to-vm-handoff.md)
+- [OKF VM test report template](references/vm-test-report-template.md)
 - [Voyage AI integration plan](plans/voyage-ai-integration-plan.md)
 - [OKF HTTP server plan](plans/okf-http-server-plan.md)
 - [OKF community readiness remediation plan](plans/okf-community-readiness-plan.md)
 - [OKF versioning and release roadmap](plans/versioning-roadmap.md)
 - [Post-extraction release follow-up plan](plans/post-extraction-release-follow-up-plan.md)
+- [OKF platform, CI, and release artifacts plan](plans/platform-ci-and-release-artifacts-plan.md)
 - [Local access, authentication, and TLS plan](plans/local-access-authentication-and-tls-plan.md)
 - [Secure document root onboarding plan](plans/secure-document-root-onboarding-plan.md)
+- [OKF public site mode and wimux.org migration plan](plans/okf-public-site-mode-and-wimux-migration-plan.md)
+- [OKF VM test integration plan](plans/okf-vm-test-integration-plan.md)
 - [Upstream knowledge-catalog index](references/upstream-knowledge-catalog-index.md)
 - [Community release checklist](references/release-checklist.md)
 

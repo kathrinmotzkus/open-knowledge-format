@@ -15,8 +15,8 @@ env:
   OKF_REQUIRE_SOCKET_E2E: "1"
 
 jobs:
-  release-gates:
-    name: Release gates
+  required-release-gates:
+    name: Required release gates (Linux x86_64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,17 +25,25 @@ jobs:
           rustup update stable --no-self-update
           rustup default stable
           rustup component add rustfmt clippy
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
       - name: Cache dependencies for offline tests
         run: cargo fetch --locked
       - name: Run release gates without Voyage credentials
         run: scripts/check-okf-release.sh
 
-  supported-platforms:
-    name: Tests on ${{ matrix.os }}
+  required-workspace-tests:
+    name: Required workspace tests (${{ matrix.platform }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        include:
+          - platform: Linux x86_64
+            os: ubuntu-latest
+          - platform: macOS x86_64
+            os: macos-15-intel
+          - platform: macOS aarch64
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -47,11 +55,50 @@ jobs:
         run: cargo fetch --locked
       - name: Test workspace offline and without provider credentials
         run: |
-          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY \
+          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
             CARGO_NET_OFFLINE=true cargo test --workspace --locked
 
+  required-target-builds:
+    name: Required target build (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - platform: Linux aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - platform: macOS x86_64
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+          - platform: macOS aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+      CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+      AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Install Linux aarch64 cross toolchain
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Cache dependencies for target build
+        run: cargo fetch --locked
+      - name: Build supported target
+        run: scripts/check-okf-target-build.sh ${{ matrix.target }}
+
   minimum-rust:
-    name: ${{ matrix.component }} MSRV ${{ matrix.rust }}
+    name: Required MSRV ${{ matrix.rust }} (${{ matrix.component }})
     strategy:
       fail-fast: false
       matrix:
@@ -69,3 +116,22 @@ jobs:
         env:
           RUSTUP_TOOLCHAIN: ${{ matrix.rust }}
         run: scripts/check-okf-msrv.sh ${{ matrix.component }}
+
+  experimental-windows:
+    name: Optional experimental Windows test
+    if: github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for offline tests
+        run: cargo fetch --locked
+      - name: Test workspace offline and without provider credentials
+        shell: bash
+        run: |
+          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
+            CARGO_NET_OFFLINE=true cargo test --workspace --locked
