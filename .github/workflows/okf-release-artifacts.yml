@@ -39,7 +39,7 @@ jobs:
       CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
       AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install stable Rust
         run: |
           rustup update stable --no-self-update
@@ -54,7 +54,7 @@ jobs:
       - name: Build and package okf-http
         run: scripts/package-okf-http-release.sh ${{ matrix.target }}
       - name: Upload okf-http archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: okf-http-${{ matrix.target }}
           path: |
@@ -66,7 +66,7 @@ jobs:
         run: scripts/package-okf-http-deb.sh ${{ matrix.target }}
       - name: Upload Debian package
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: okf-http-deb-${{ matrix.target }}
           path: |
