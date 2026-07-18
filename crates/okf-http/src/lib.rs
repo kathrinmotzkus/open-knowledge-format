@@ -8531,9 +8531,13 @@ mod tests {
             "/okf-docs/secure/%2eenv",
             "/okf-docs/secure/%252eenv",
             "/okf-docs/secure/.ssh/id.md",
-            "/okf-docs/secure/Case/Same.md",
-            "/okf-docs/secure/case/same.md",
         ];
+        let first_case_path = documents.join("Case/Same.md");
+        let second_case_path = documents.join("case/same.md");
+        if first_case_path.canonicalize().ok() != second_case_path.canonicalize().ok() {
+            denied.push("/okf-docs/secure/Case/Same.md");
+            denied.push("/okf-docs/secure/case/same.md");
+        }
         #[cfg(unix)]
         denied.push("/okf-docs/secure/linked.md");
         for path in denied {
@@ -9820,9 +9824,10 @@ OKF_VOYAGE_RPM_LIMIT=45
         let proposal_id = payload["data"]["id"].as_str().unwrap();
         let proposal_digest = payload["data"]["proposal_digest"].as_str().unwrap();
         assert_eq!(payload["data"]["registration"]["priority"], 300);
+        let canonical_documents = documents.canonicalize().expect("canonical documents path");
         assert_eq!(
             payload["data"]["canonical_root"],
-            documents.display().to_string()
+            canonical_documents.display().to_string()
         );
 
         let configuration = router
