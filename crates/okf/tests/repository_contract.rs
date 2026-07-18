@@ -93,8 +93,7 @@ fn bundled_knowledge_documents_have_required_type_metadata() {
         .iter()
         .filter(|document| {
             document.relative_path().file_name().is_some_and(|name| {
-                name == std::ffi::OsStr::new("index.md")
-                    || name == std::ffi::OsStr::new("log.md")
+                name == std::ffi::OsStr::new("index.md") || name == std::ffi::OsStr::new("log.md")
             })
         })
         .collect::<Vec<_>>();
