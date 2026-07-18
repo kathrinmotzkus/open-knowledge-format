@@ -8,12 +8,27 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+## [0.3.2] - 2026-07-18
+
 ### Changed
 
 - Expanded documentation to position OKF as a durable knowledge-networking
   layer for Markdown documents, metadata, identities, reviewed relations,
   semantic search, and agent-readable context.
 - Added the `OKF as a Knowledge Network` concept document.
+
+### Fixed
+
+- Made filesystem-sensitive admission, proposal, repository, and transaction
+  contract tests portable across Linux and macOS runner differences without
+  weakening OKF path-safety rules.
+
+### Infrastructure
+
+- Added required CI coverage for Linux x86_64, Linux aarch64, macOS x86_64,
+  and macOS aarch64.
+- Split MSRV checks so the core OKF library remains verified on Rust 1.85 while
+  `okf-http` can move independently.
 
 ## [0.3.1] - 2026-07-15
 

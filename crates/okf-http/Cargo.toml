@@ -1,6 +1,6 @@
 [package]
 name = "okf-http"
-version = "0.3.2"
+version = "0.4.0"
 edition = "2021"
 rust-version = "1.88"
 license = "Apache-2.0"
@@ -21,7 +21,7 @@ argon2 = "0.5"
 axum = "0.8.9"
 axum-server = { version = "0.8", default-features = false, features = ["tls-rustls-no-provider"] }
 getrandom = "0.2"
-okf = { package = "okf-open-knowledge-format", version = "0.3.1", path = "../okf" }
+okf = { package = "okf-open-knowledge-format", version = "0.3.2", path = "../okf" }
 rcgen = { version = "0.13", features = ["x509-parser"] }
 rpassword = "7"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }

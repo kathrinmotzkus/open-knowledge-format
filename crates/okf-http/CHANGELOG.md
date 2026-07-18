@@ -8,11 +8,34 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+## [0.4.0] - 2026-07-18
+
+This release raises the `okf-http` minimum supported Rust version to 1.88 so
+the HTTP server can stay on advisory-fixed TLS and certificate-handling
+dependencies. The core `okf-open-knowledge-format` library remains on Rust
+1.85 and is versioned independently.
+
 ### Changed
 
 - Expanded documentation to describe `okf-http` as the local workbench for OKF
   knowledge networks while keeping canonical knowledge in Markdown and
   frontmatter.
+- Raised the `okf-http` MSRV from Rust 1.85 to Rust 1.88.
+- Updated the internal OKF dependency to `okf-open-knowledge-format 0.3.2`.
+
+### Added
+
+- Added required CI coverage for Linux x86_64, Linux aarch64, macOS x86_64,
+  and macOS aarch64.
+- Added release-artifact automation for versioned `okf-http` archives and
+  initial Linux `.deb` packages.
+
+### Fixed
+
+- Made route, admission, proposal, and transaction recovery tests portable
+  across Linux and macOS CI runners.
+- Kept release gates green without Voyage AI credentials or trusted-proxy
+  secrets.
 
 ## [0.3.2] - 2026-07-15
 

@@ -4,15 +4,15 @@ type: Checklist
 kind: knowledge-reference
 topic: okf-release
 status: active
-updated: 2026-07-15
+updated: 2026-07-18
 tags: [okf, release, ci, security, packaging]
 ---
 
 # OKF Community Release Checklist
 
 This checklist covers source and binary community releases of
-`okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.1`
-and `okf-http 0.3.2` are the current prepared release versions. The library
+`okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.2`
+and `okf-http 0.4.0` are the current prepared release versions. The library
 package exports the Rust crate name `okf`.
 
 ## Clean Source
