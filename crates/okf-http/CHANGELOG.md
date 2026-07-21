@@ -8,6 +8,14 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+## [0.4.2] - 2026-07-21
+
+### Security
+
+- Removed the direct non-loopback `okf-http` startup path. Supported local,
+  intranet, and Internet deployments now keep `okf-http` bound to loopback and
+  expose network-facing access only through a reverse proxy.
+
 ## [0.4.1] - 2026-07-21
 
 ### Fixed

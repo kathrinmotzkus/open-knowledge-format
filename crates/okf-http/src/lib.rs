@@ -323,7 +323,6 @@ struct RawArgs {
     install_browser: bool,
     force: bool,
     scanlab_compat: bool,
-    allow_remote: bool,
     trusted_proxy: bool,
     public_origin: Option<String>,
     session_token: Option<OsString>,
@@ -345,7 +344,6 @@ impl Default for RawArgs {
             install_browser: false,
             force: false,
             scanlab_compat: false,
-            allow_remote: false,
             trusted_proxy: false,
             public_origin: None,
             session_token: None,
@@ -529,7 +527,6 @@ fn parse_cli_internal(
             || !raw.additional_roots.is_empty()
             || raw.host != DEFAULT_HOST
             || raw.scanlab_compat
-            || raw.allow_remote
             || raw.trusted_proxy
             || raw.public_origin.is_some()
             || raw.session_token.is_some()
@@ -602,39 +599,9 @@ fn parse_cli_internal(
             "--expose-physical-paths requires --local-editor",
         ));
     }
-    if remote_host && mode != ServerMode::AuthenticatedTls {
+    if remote_host {
         return Err(CliError::new(
-            "non-loopback binding requires --authenticated TLS mode",
-        ));
-    }
-    if mode == ServerMode::AuthenticatedTls
-        && raw
-            .host
-            .parse::<std::net::IpAddr>()
-            .is_ok_and(|address| address.is_unspecified())
-    {
-        return Err(CliError::new(
-            "authenticated TLS requires a concrete bind address, not an unspecified address",
-        ));
-    }
-    if remote_host && !raw.allow_remote {
-        return Err(CliError::new(
-            "non-loopback binding requires --allow-remote and an explicit session token",
-        ));
-    }
-    if raw.allow_remote && !remote_host {
-        return Err(CliError::new(
-            "--allow-remote is only valid with a non-loopback bind host",
-        ));
-    }
-    if raw.trusted_proxy && remote_host {
-        return Err(CliError::new(
-            "--trusted-proxy requires a loopback bind host; the proxy is the only remote listener",
-        ));
-    }
-    if raw.trusted_proxy && raw.allow_remote {
-        return Err(CliError::new(
-            "--trusted-proxy and --allow-remote are mutually exclusive",
+            "non-loopback binding is not supported; keep okf-http on loopback and expose a reverse proxy",
         ));
     }
     if raw.trusted_proxy && mode != ServerMode::AuthenticatedTls {
@@ -668,11 +635,6 @@ fn parse_cli_internal(
         }
         None
     };
-    if remote_host && explicit_session_token.is_none() {
-        return Err(CliError::new(format!(
-            "remote access requires --session-token or {SESSION_TOKEN_ENV_KEY}"
-        )));
-    }
     let session_token = match explicit_session_token {
         Some(token) => parse_session_token(token)?,
         None => generate_session_token()?,
@@ -711,7 +673,7 @@ fn parse_cli_internal(
         env_file: config_file,
         scanlab_compat: raw.scanlab_compat,
         session_token,
-        remote_access: remote_host,
+        remote_access: false,
         trusted_proxy,
         expose_physical_paths: raw.expose_physical_paths,
     }))
@@ -824,10 +786,6 @@ fn parse_raw_args(args: impl IntoIterator<Item = OsString>) -> Result<Option<Raw
         }
         if arg == OsStr::new("--authenticated") {
             parsed.authenticated = true;
-            continue;
-        }
-        if arg == OsStr::new("--allow-remote") {
-            parsed.allow_remote = true;
             continue;
         }
         if arg == OsStr::new("--trusted-proxy") {
@@ -1245,7 +1203,7 @@ fn atomic_write_private(path: &Path, bytes: &[u8]) -> Result<(), String> {
 }
 
 pub fn help_text() -> &'static str {
-    "Usage: okf-http [--local-editor | --authenticated --tls-cert <path> --tls-key <path>] [--host <host>] [--browser-root <path>] [--root <path>|--root <mount>=<path>] [--add-root <spec>] [--scanlab-compat] [--expose-physical-paths] [--allow-remote --session-token <token> | --trusted-proxy --public-origin <https-origin>] <port>\n\
+    "Usage: okf-http [--local-editor | --authenticated --tls-cert <path> --tls-key <path>] [--host <loopback-host>] [--browser-root <path>] [--root <path>|--root <mount>=<path>] [--add-root <spec>] [--scanlab-compat] [--expose-physical-paths] [--session-token <token> | --trusted-proxy --public-origin <https-origin>] <port>\n\
        okf-http tls <init|status|verify|renew>\n\
   okf-http user <add|passwd|disable|remove|list|grant|revoke> ...\n\
   okf-http roots import-env\n\
@@ -1258,16 +1216,15 @@ Arguments:\n\
 Options:\n\
   --install-browser       Provision the packaged browser into the configured browser root; no port is used.\n\
   --force                 With --install-browser, replace user-modified packaged assets.\n\
-  --host <host>           Bind host. Default: 127.0.0.1. Non-loopback hosts such as 0.0.0.0 require --allow-remote and explicit authentication.\n\
+  --host <host>           Loopback bind host. Default: 127.0.0.1. Intranet and Internet access must use a reverse proxy.\n\
   --browser-root <path>   Serve the OKF browser from this directory. Default on Linux: ~/docs-browser.\n\
   --root <spec>           Add a document root for this process. Use <path> or <mount>=<path>. May be repeated.\n\
   --add-root <spec>       Append a lower-priority fallback without replacing persistent roots with the same mount.\n\
   --scanlab-compat        Enable scanlab's legacy document and repository-file routes.\n\
   --local-editor          Enable protected mutation and token-spending routes on loopback. Default: read-only.\n\
-  --authenticated         Start HTTPS with explicit certificate files. Required for every non-loopback bind.\n\
+  --authenticated         Start HTTPS with explicit certificate files on loopback.\n\
   --tls-cert <path>       PEM certificate chain for --authenticated mode.\n\
   --tls-key <path>        Owner-only PEM private key for --authenticated mode.\n\
-  --allow-remote          Explicitly allow a concrete non-loopback bind host in authenticated TLS mode. Requires an explicit session token.\n\
   --trusted-proxy         Trust one loopback reverse proxy only when it injects OKF_HTTP_TRUSTED_PROXY_TOKEN. Backend HTTPS remains mandatory.\n\
   --public-origin <url>   Exact external HTTPS origin used only with --trusted-proxy, for example https://knowledge.example.\n\
   --session-token <token> Set the API session token. Prefer OKF_HTTP_SESSION_TOKEN to avoid process-list exposure.\n\
@@ -1296,9 +1253,10 @@ Security:\n\
   Read-only mode is the default and does not mount mutation or token-spending routes.\n\
   Local editor mode is loopback-only. Pair in the browser with the one-time terminal code.\n\
   Authenticated mode refuses startup unless certificate, key, SAN, validity, and key permissions pass validation.\n\
-  Plain HTTP is loopback-only. Non-loopback binding additionally requires --allow-remote and an explicit session token.\n\
+  okf-http always binds to loopback for supported local, intranet, and Internet deployments.\n\
+  Expose intranet and Internet sites through a reverse proxy instead of binding okf-http to a non-loopback address.\n\
   Trusted-proxy mode is loopback-only, requires HTTPS on both hops, rejects direct backend requests, and validates unambiguous forwarded host/proto fields.\n\
-  Direct remote and trusted-proxy deployments require login for document reads and disable remote document-root management.\n\
+  Trusted-proxy deployments require login for document reads and disable remote document-root management.\n\
   `tls init` creates an optional local CA and localhost certificate under the private XDG state directory without changing any trust store.\n"
 }
 

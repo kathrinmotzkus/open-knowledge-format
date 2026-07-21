@@ -329,15 +329,20 @@ cannot spend Voyage tokens. Password, role, disablement, and removal changes
 invalidate existing sessions. CLI administration remains the recovery path if
 browser access is unavailable.
 
-For non-loopback or enterprise reverse-proxy deployment, follow the explicit
-[remote and enterprise boundary](../../../okf-http/README.md#remote-and-enterprise-deployment).
-Remote content reads require login and remote document-root administration is
-disabled. The proxy mode keeps HTTPS on both hops and needs a separately stored
-proxy secret; do not put that secret in `.env`, Markdown, or browser assets.
+For intranet or Internet deployment, keep `okf-http` bound to loopback and
+publish it only through a reverse proxy. Follow the explicit
+[reverse-proxy deployment boundary](../../../okf-http/README.md#reverse-proxy-deployment-boundary).
+The proxy owns the network-facing address, public TLS, firewall exposure, and
+site policy. Protected remote content reads require login, and remote
+document-root administration is disabled unless a future policy explicitly
+allows it. Trusted-proxy mode keeps HTTPS on both hops and needs a separately
+stored proxy secret; do not put that secret in `.env`, Markdown, or browser
+assets.
 
 ## Security Notes
 
-- Keep the default loopback bind unless remote access is genuinely required.
+- Keep `okf-http` bound to loopback. For intranet or Internet access, expose a
+  reverse proxy instead of exposing `okf-http` directly.
 - Use the default read-only mode whenever no mutation or paid action is needed.
 - Local editor mode is explicit and cannot bind to a non-loopback host.
 - Never place the API key, pairing code, or session material in browser assets,
@@ -351,9 +356,8 @@ proxy secret; do not put that secret in `.env`, Markdown, or browser assets.
   or the transitional automation token.
 - Root configuration writes additionally require
   `X-OKF-Config-Write: confirm` and take effect after restart.
-- Plain HTTP is loopback-only. Direct remote operation requires explicit
-  authenticated TLS mode, a concrete bind address, matching SAN, and explicit
-  remote opt-in.
+- Plain HTTP is loopback-only. Production network access should go through a
+  reverse proxy while `okf-http` remains on `127.0.0.1` or `::1`.
 
 See the [HTTP threat model](security/http-threat-model.md),
 [API v1 reference](integration/http-api-v1.md), and

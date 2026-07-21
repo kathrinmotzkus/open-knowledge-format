@@ -90,7 +90,6 @@ Initial command shape:
 
 ```bash
 okf-http <port>
-okf-http --host 0.0.0.0 <port>
 okf-http --host 127.0.0.1 <port>
 okf-http --root scanlab=docs --root okf=crates/okf/docs/knowledge <port>
 ```
@@ -100,8 +99,9 @@ Rules:
 - The positional port is required at first.
 - The port must be unprivileged (`>= 1024`).
 - The default host is `127.0.0.1`.
-- Because the Python workaround needed all-interface binding, document
-  `--host 0.0.0.0` as an explicit troubleshooting option.
+- Do not document all-interface binding as a troubleshooting path. Intranet and
+  Internet deployments must keep `okf-http` on loopback and expose a reverse
+  proxy instead.
 - `okf-http` accepts document roots from both `.env` and CLI arguments.
 - `.env` remains the persistent storage location for configured document roots.
 - CLI `--root` arguments replace persistent roots with the same mount for the
@@ -117,15 +117,17 @@ Completion criteria:
 - Help text explains host and port behavior.
 - Help text explains how `.env` roots and CLI `--root` values are combined.
 
-Status: implemented. `okf-http` now parses `--host`, repeated `--root`
-arguments, repeated `--add-root` fallbacks, `--help`, and one required
-unprivileged port. The default bind host
-is `127.0.0.1`, and `--host 0.0.0.0` is documented as an explicit
-troubleshooting option. Invalid, missing, duplicate, or privileged ports fail
-with clear CLI errors. Root syntax is parsed by the shared OKF configuration
-API; malformed mounts fail early, CLI mounts override persistent mounts, and
-IPv4, hostnames, and IPv6 bind targets are supported. Persistent root editing
-is available through an atomic `.env` configuration API.
+Status: implemented and later tightened by the reverse-proxy deployment
+policy. `okf-http` parses `--host`, repeated `--root` arguments, repeated
+`--add-root` fallbacks, `--help`, and one required unprivileged port. The
+default bind host is `127.0.0.1`. Intranet and Internet deployment keeps
+`okf-http` on loopback and exposes a reverse proxy instead of using
+all-interface binding as troubleshooting. Invalid, missing, duplicate, or
+privileged ports fail with clear CLI errors. Root syntax is parsed by the
+shared OKF configuration API; malformed mounts fail early, CLI mounts override
+persistent mounts, and loopback IPv4/IPv6 bind targets are supported.
+Persistent root editing is available through an atomic `.env` configuration
+API.
 
 ## Phase 2a: OKF Binary CLI Foundation
 

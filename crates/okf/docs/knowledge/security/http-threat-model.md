@@ -210,18 +210,18 @@ and untrusted replacement certificates remain documented residual risks.
 ### Accidental Non-Loopback Binding
 
 Read-only and local-editor modes bind only to loopback. Local editor mode
-refuses non-loopback binding. Authenticated TLS still requires explicit remote
-opt-in, a concrete bind address, matching SAN, and explicit authority. HTTPS
-never enables remote binding implicitly.
+refuses non-loopback binding. For intranet and Internet deployments, `okf-http`
+remains a loopback backend behind a reverse proxy. HTTPS never turns the OKF
+process itself into the public network boundary.
 
 ### Remote Anonymous Reads and Root Administration
 
-Local read-only, local-editor, and authenticated TLS operation retain anonymous
-document reading. Direct remote and trusted-proxy deployments default to
-authenticated document/graph/API reads while keeping only browser assets,
-health, session status, and login bootstrap public. Remote document-root
-inspection, initialization, and mutation are denied even to authenticated
-editors until the separate root-onboarding policy explicitly authorizes them.
+Local read-only, local-editor, and authenticated local TLS operation retain
+anonymous document reading. Trusted-proxy deployments default to authenticated
+document/graph/API reads while keeping only browser assets, health, session
+status, and login bootstrap public. Remote document-root inspection,
+initialization, and mutation are denied even to authenticated editors until the
+separate root-onboarding policy explicitly authorizes them.
 
 ### Path and Content Escape
 
@@ -246,8 +246,8 @@ in the owner-private, versioned XDG `okf/config.toml` file.
 
 The HTTP implementation exposes proposal details only through versioned local
 routes guarded by `roots.propose`. The transitional automation token is not an
-accepted root-management authority. Remote binds and trusted proxies reject
-proposal, configuration, and initialization capabilities before handler
+accepted root-management authority. Network-facing trusted-proxy deployments
+reject proposal, configuration, and initialization capabilities before handler
 execution. Mutations additionally bind paired or persistent sessions to CSRF,
 same-origin, exact proposal/plan digests, explicit confirmation headers, and
 configuration revisions. Audit records omit physical paths and document

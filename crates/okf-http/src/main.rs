@@ -124,9 +124,6 @@ async fn main() -> ExitCode {
                     eprintln!("warning: document root {index} is not readable: {error}");
                 }
             }
-            if config.remote_access() {
-                eprintln!("warning: explicit remote authenticated-TLS binding is enabled");
-            }
             if let Some(proxy) = config.trusted_proxy() {
                 eprintln!(
                     "warning: trusted reverse-proxy mode is enabled for {} and direct backend requests will be rejected",

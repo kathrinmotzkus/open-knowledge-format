@@ -140,13 +140,12 @@ TLS-only account routes are:
 - `POST /api/v1/access/sessions/revoke-user`: revoke a user's sessions with
   `security.manage`
 
-### Remote and Trusted-Proxy Boundary
+### Reverse-Proxy Boundary
 
-Direct non-loopback operation requires validated authenticated TLS, a concrete
-bind address, `--allow-remote`, and explicit startup authority. A trusted proxy
-is a separate loopback-only mode configured with `--trusted-proxy`, an exact
-`--public-origin https://...`, and `OKF_HTTP_TRUSTED_PROXY_TOKEN`. The proxy-to-
-OKF hop remains HTTPS.
+Network-facing operation should be deployed through a reverse proxy while
+`okf-http` remains bound to loopback. Trusted-proxy mode is configured with
+`--trusted-proxy`, an exact `--public-origin https://...`, and
+`OKF_HTTP_TRUSTED_PROXY_TOKEN`. The proxy-to-OKF hop remains HTTPS.
 
 Trusted proxy requests must present a backend Host matching the OKF listener,
 the secret `X-OKF-Trusted-Proxy-Token`, and exactly one matching
@@ -154,11 +153,11 @@ the secret `X-OKF-Trusted-Proxy-Token`, and exactly one matching
 the standard `Forwarded` header, downgrade, direct backend access, and incorrect
 Origin values are rejected. Forwarded client IP is never an identity source.
 
-In direct remote and trusted-proxy deployments, ordinary OKF content APIs need
-a valid persistent session even though the same routes remain anonymous in all
-local modes. Remote `/config/roots` access is forbidden. Health reports the
-deployment boundary and whether anonymous document reads are enabled without
-exposing the proxy token.
+In trusted-proxy deployments, ordinary OKF content APIs need a valid persistent
+session even though the same routes remain anonymous in local loopback modes.
+Remote `/config/roots` access is forbidden. Health reports the deployment
+boundary and whether anonymous document reads are enabled without exposing the
+proxy token.
 
 ## Planning and Action Schemas
 
@@ -240,11 +239,10 @@ missing, expired, stale, unstable, digest-mismatched and concurrently modified
 state. API audit events contain only action, stable/proposal reference, and
 success state—not source contents, physical paths, credentials, or secrets.
 
-The startup automation token cannot authorize root management. Remote binds
-and trusted-proxy deployments cannot create proposals or mutate roots even when
-an authenticated account exists. Admitted document and declared-resource reads
-remain anonymous on the local read-only server. Browser API code never writes
-`.env`.
+The startup automation token cannot authorize root management. Trusted-proxy
+deployments cannot create proposals or mutate roots even when an authenticated
+account exists. Admitted document and declared-resource reads remain anonymous
+on the local read-only server. Browser API code never writes `.env`.
 
 Legacy `POST`, `PUT`, and `DELETE` routes below `/api/v1/config/roots` and
 `/api/okf/config/roots` return `410 Gone`. The legacy GET remains temporarily

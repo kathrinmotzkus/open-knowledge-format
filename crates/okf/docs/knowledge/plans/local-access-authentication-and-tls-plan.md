@@ -366,11 +366,11 @@ regular files, owner-only Unix key permissions, PEM/X.509 parsing, current
 validity, exact DNS/IP SAN coverage for the configured host, certificate/key
 compatibility, and safe TLS protocol defaults. `localhost`, `127.0.0.1`, and
 `::1` SANs are supported. Validation failure terminates startup without an HTTP
-fallback. Plain HTTP is now loopback-only; remote TLS additionally requires a
-concrete address, explicit `--allow-remote`, and explicit transitional
-automation authority. Health and startup output expose only SANs, validity,
-protocol, and certificate fingerprint. Temporary-certificate tests cover valid
-HTTPS, plain-HTTP refusal, malformed and expired certificates, wrong SAN,
+fallback. Plain HTTP is now loopback-only. The later reverse-proxy deployment
+policy keeps `okf-http` on loopback for intranet and Internet deployments.
+Health and startup output expose only SANs, validity, protocol, and certificate
+fingerprint. Temporary-certificate tests cover valid HTTPS, plain-HTTP refusal,
+malformed and expired certificates, wrong SAN,
 mismatched keys, and insecure key permissions without touching trust stores.
 
 ## Phase 6: Guided Local CA and Certificate Setup
@@ -523,8 +523,9 @@ capability separation, revocation, and disabled-user behavior.
 
 ## Phase 9: Remote and Enterprise Deployment Boundary
 
-- Keep non-loopback binding an explicit opt-in.
-- Require authenticated TLS mode for direct remote binding.
+- Keep `okf-http` as a loopback-only backend for intranet and Internet
+  deployments.
+- Expose OKF through a reverse proxy rather than direct non-loopback binding.
 - Support externally managed certificate/key files and deployment behind an
   authenticated TLS reverse proxy with a documented trusted-proxy model.
 - Do not treat the local OKF CA as an automatic enterprise trust solution.
@@ -540,24 +541,25 @@ capability separation, revocation, and disabled-user behavior.
 Completion criteria:
 
 - Local defaults cannot accidentally expose the server remotely.
-- Direct remote password authentication always uses validated TLS.
+- Intranet and Internet deployments keep `okf-http` on loopback and expose only
+  a reverse proxy.
 - Reverse-proxy trust is explicit and testable.
 - Enterprise setup does not require changing canonical OKF documents.
 
-Status: implemented. Direct non-loopback binding still requires a concrete
-address, validated authenticated TLS, `--allow-remote`, and explicit startup
-authority. A separate trusted-proxy mode binds the OKF backend only to
-loopback, retains HTTPS on the proxy-to-OKF hop, requires an exact public HTTPS
-origin and a deployment secret from `OKF_HTTP_TRUSTED_PROXY_TOKEN`, and rejects
-direct backend requests. Forwarded protocol/host values must be singular and
-exact; HTTP downgrade, `Forwarded`, repeated/comma-separated fields, wrong
-Origin, and ambiguous client identity are refused. Forwarded addresses never
-become authentication identity.
+Status: implemented and refined by the later reverse-proxy deployment policy.
+For intranet and Internet deployments, `okf-http` remains bound to loopback and
+is exposed only through a reverse proxy. Trusted-proxy mode binds the OKF
+backend only to loopback, retains HTTPS on the proxy-to-OKF hop, requires an
+exact public HTTPS origin and a deployment secret from
+`OKF_HTTP_TRUSTED_PROXY_TOKEN`, and rejects direct backend requests. Forwarded
+protocol/host values must be singular and exact; HTTP downgrade, `Forwarded`,
+repeated/comma-separated fields, wrong Origin, and ambiguous client identity
+are refused. Forwarded addresses never become authentication identity.
 
-Local modes preserve anonymous reading. Direct remote and trusted-proxy modes
-expose only browser/login bootstrap and health anonymously; document, graph,
-and content API reads require a persistent account. Root inspection,
-initialization, and mutation are denied remotely pending the independent
+Local modes preserve anonymous reading. Trusted-proxy deployments expose only
+browser/login bootstrap and health anonymously; document, graph, and content
+API reads require a persistent account. Root inspection, initialization, and
+mutation are denied remotely pending the independent
 root-onboarding policy. External personal or enterprise certificates remain
 supported, while the OKF local CA is explicitly not presented as enterprise
 PKI. Deployment guidance covers managed browser trust, service secret storage,

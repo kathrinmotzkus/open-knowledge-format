@@ -262,11 +262,11 @@ and browser-permission headers.
 Token-spending and mutating APIs require a cryptographically generated
 `X-OKF-Session-Token`; root writes retain their additional explicit
 confirmation header. Mismatching `Origin` and cross-site Fetch Metadata are
-rejected before side effects. Non-loopback binding now requires both
-`--allow-remote` and an explicit token supplied by CLI or
-`OKF_HTTP_SESSION_TOKEN`. Tests cover all sensitive routes, cross-site
-requests, security headers, symlink escapes, and plain, encoded, and
-double-encoded traversal attempts. The
+rejected before side effects. Plain HTTP non-loopback binding is refused. The
+later reverse-proxy deployment policy keeps `okf-http` on loopback for intranet
+and Internet deployments.
+Tests cover all sensitive routes, cross-site requests, security headers,
+symlink escapes, and plain, encoded, and double-encoded traversal attempts. The
 [OKF HTTP threat model](../security/http-threat-model.md) documents protected
 assets, controls, and residual risk.
 

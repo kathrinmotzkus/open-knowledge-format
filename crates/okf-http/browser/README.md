@@ -135,12 +135,12 @@ blocks loopback traffic, try an explicit host:
 okf-http --host 127.0.0.1 8003
 ```
 
-Plain HTTP is deliberately loopback-only. Non-loopback binding requires
-`--authenticated`, matching certificate SANs, explicit certificate/key paths,
-`--allow-remote`, a concrete bind address, and explicit authority. Invalid TLS
-material aborts startup without falling back to HTTP.
+Plain HTTP is deliberately loopback-only. For intranet or Internet use,
+`okf-http` should still bind only to `127.0.0.1` or `::1`; expose a reverse
+proxy such as NGINX instead. Invalid TLS material aborts startup without
+falling back to HTTP.
 
-Direct remote and trusted reverse-proxy deployments require account login for
-document reads and disable root management. Trusted-proxy mode also requires
-loopback backend HTTPS, an exact public origin, and a separate proxy token; see
-the `okf-http` README for the required header-replacement contract.
+Trusted reverse-proxy deployments require account login for document reads and
+disable root management. Trusted-proxy mode also requires loopback backend
+HTTPS, an exact public origin, and a separate proxy token; see the `okf-http`
+README for the required header-replacement contract.

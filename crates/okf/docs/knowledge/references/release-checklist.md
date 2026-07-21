@@ -12,7 +12,7 @@ tags: [okf, release, ci, security, packaging]
 
 This checklist covers source and binary community releases of
 `okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.2`
-and `okf-http 0.4.1` are the current prepared release versions. The library
+and `okf-http 0.4.2` are the current prepared release versions. The library
 package exports the Rust crate name `okf`.
 
 ## Clean Source
@@ -130,10 +130,11 @@ does not depend on the unmaintained `rustls-pemfile` crate.
 - [ ] Authenticated mode refuses missing, malformed, mismatched, expired,
       not-yet-valid, wrong-SAN, or insecurely permissioned TLS material before
       binding and never falls back to HTTP.
-- [ ] Plain HTTP remains loopback-only; remote TLS requires a concrete bind
-      address, matching SAN, explicit opt-in, and explicit authority.
-- [ ] Direct remote and trusted-proxy reads require a persistent account;
-      remote document-root inspection and mutation remain unavailable.
+- [ ] Plain HTTP remains loopback-only.
+- [ ] Intranet and Internet deployments keep `okf-http` bound to loopback and
+      expose only a reverse proxy to the network.
+- [ ] Trusted-proxy reads require a persistent account; remote document-root
+      inspection and mutation remain unavailable.
 - [ ] Trusted-proxy mode requires a loopback HTTPS backend, exact public HTTPS
       origin, matching singular forwarded host/protocol fields, and a separate
       deployment secret; direct-backend bypass and HTTP downgrade fail.

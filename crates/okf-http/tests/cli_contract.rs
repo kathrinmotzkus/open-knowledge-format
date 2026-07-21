@@ -164,18 +164,15 @@ fn parses_required_unprivileged_port_with_default_host() {
 }
 
 #[test]
-fn accepts_explicit_host_and_document_roots() {
+fn accepts_explicit_loopback_host_and_document_roots() {
     let config = run_action(&[
         "--host",
-        "192.0.2.10",
+        "127.0.0.1",
         "--authenticated",
         "--tls-cert",
         "/tmp/okf-cert.pem",
         "--tls-key",
         "/tmp/okf-key.pem",
-        "--allow-remote",
-        "--session-token",
-        "remote-session-token-0000000000000000",
         "--browser-root",
         "/tmp/docs-browser",
         "--root",
@@ -184,13 +181,13 @@ fn accepts_explicit_host_and_document_roots() {
         "8003",
     ]);
 
-    assert_eq!(config.host(), "192.0.2.10");
+    assert_eq!(config.host(), "127.0.0.1");
     assert_eq!(config.mode(), ServerMode::AuthenticatedTls);
     assert_eq!(
         config.tls().expect("TLS files").certificate(),
         Path::new("/tmp/okf-cert.pem")
     );
-    assert!(config.remote_access());
+    assert!(!config.remote_access());
     assert_eq!(config.port(), 8003);
     assert_eq!(config.browser_root(), Path::new("/tmp/docs-browser"));
     assert_eq!(config.roots().len(), 2);
@@ -238,15 +235,7 @@ fn local_editor_is_explicit_and_loopback_only() {
     assert!(!debug.contains(pairing_code));
 
     let remote = parse_cli_with_sources_and_security(
-        os_args(&[
-            "--local-editor",
-            "--host",
-            "0.0.0.0",
-            "--allow-remote",
-            "--session-token",
-            "remote-session-token-0000000000000000",
-            "8003",
-        ]),
+        os_args(&["--local-editor", "--host", "0.0.0.0", "8003"]),
         None,
         None,
         None,
@@ -416,8 +405,8 @@ fn rejects_malformed_root_specs_and_accepts_ipv6_hosts() {
 }
 
 #[test]
-fn remote_binding_requires_explicit_opt_in_and_authentication() {
-    let without_opt_in = parse_cli_with_sources(
+fn non_loopback_binding_is_not_supported_directly() {
+    let plain = parse_cli_with_sources(
         os_args(&["--host", "192.0.2.10", "8003"]),
         None,
         None,
@@ -426,9 +415,10 @@ fn remote_binding_requires_explicit_opt_in_and_authentication() {
     )
     .expect_err("remote host must be rejected")
     .to_string();
-    assert!(without_opt_in.contains("--authenticated"));
+    assert!(plain.contains("non-loopback binding is not supported"));
+    assert!(plain.contains("reverse proxy"));
 
-    let without_token = parse_cli_with_sources(
+    let authenticated = parse_cli_with_sources_and_security(
         os_args(&[
             "--host",
             "192.0.2.10",
@@ -437,68 +427,41 @@ fn remote_binding_requires_explicit_opt_in_and_authentication() {
             "/tmp/cert.pem",
             "--tls-key",
             "/tmp/key.pem",
-            "--allow-remote",
+            "--session-token",
+            "environment-session-token-000000000000",
             "8003",
         ]),
         None,
         None,
         None,
         None,
+        None,
     )
-    .expect_err("remote host requires authentication")
+    .expect_err("authenticated remote host must still be rejected")
     .to_string();
-    assert!(without_token.contains("session-token"));
+    assert!(authenticated.contains("non-loopback binding is not supported"));
 
-    let action = parse_cli_with_sources_and_security(
-        os_args(&[
-            "--host",
-            "192.0.2.10",
-            "--authenticated",
-            "--tls-cert",
-            "/tmp/cert.pem",
-            "--tls-key",
-            "/tmp/key.pem",
-            "--allow-remote",
-            "8003",
-        ]),
+    let unspecified = parse_cli_with_sources(
+        os_args(&["--host", "0.0.0.0", "8003"]),
         None,
         None,
         None,
         None,
-        Some(OsString::from("environment-session-token-000000000000")),
     )
-    .expect("authenticated remote bind");
-    let CliAction::Run(config) = action else {
-        panic!("expected run action");
-    };
-    assert!(config.remote_access());
-    assert_eq!(config.mode(), ServerMode::AuthenticatedTls);
-    assert_eq!(
-        config.session_token(),
-        "environment-session-token-000000000000"
-    );
-
-    let unspecified = parse_cli_with_sources_and_security(
-        os_args(&[
-            "--host",
-            "0.0.0.0",
-            "--authenticated",
-            "--tls-cert",
-            "/tmp/cert.pem",
-            "--tls-key",
-            "/tmp/key.pem",
-            "--allow-remote",
-            "8003",
-        ]),
-        None,
-        None,
-        None,
-        None,
-        Some(OsString::from("environment-session-token-000000000000")),
-    )
-    .expect_err("unspecified TLS bind must be rejected")
+    .expect_err("unspecified bind must be rejected")
     .to_string();
-    assert!(unspecified.contains("concrete bind address"));
+    assert!(unspecified.contains("non-loopback binding is not supported"));
+
+    let legacy_opt_in = parse_cli_with_sources(
+        os_args(&["--allow-remote", "--host", "192.0.2.10", "8003"]),
+        None,
+        None,
+        None,
+        None,
+    )
+    .expect_err("legacy remote opt-in must be rejected")
+    .to_string();
+    assert!(legacy_opt_in.contains("unknown option"));
 }
 
 #[test]
@@ -626,7 +589,7 @@ fn help_text_documents_host_port_roots_and_env_policy() {
 
     let help = help_text();
     assert!(help.contains("127.0.0.1"));
-    assert!(help.contains("0.0.0.0"));
+    assert!(!help.contains("0.0.0.0"));
     assert!(help.contains("<port>"));
     assert!(help.contains("--root"));
     assert!(help.contains("--add-root"));
@@ -637,7 +600,7 @@ fn help_text_documents_host_port_roots_and_env_policy() {
     assert!(help.contains("--tls-cert"));
     assert!(help.contains("--tls-key"));
     assert!(help.contains("read-only"));
-    assert!(help.contains("--allow-remote"));
+    assert!(!help.contains("--allow-remote"));
     assert!(help.contains("--session-token"));
     assert!(help.contains("--expose-physical-paths"));
     assert!(help.contains("--version"));

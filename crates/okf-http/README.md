@@ -99,6 +99,13 @@ cargo run -p okf-http -- --browser-root docs-browser 8003
 The default bind host is `127.0.0.1`. The port is required and must be
 unprivileged (`>= 1024`).
 
+For local, intranet, and public deployments, `okf-http` is the private backend
+and should remain bound to loopback (`127.0.0.1` or `::1`). Network-facing
+access belongs in a reverse proxy such as NGINX, Caddy, Apache, or an
+enterprise gateway. The reverse proxy owns public addresses, certificates,
+firewall exposure, rate limits, and site policy; `okf-http` serves the OKF
+application behind that boundary.
+
 The default browser root is `~/docs-browser`. Use `--browser-root <path>` or
 `OKF_BROWSER_ROOT` when developing against another browser directory.
 
@@ -246,23 +253,12 @@ the configured host. DNS `localhost`, IPv4 `127.0.0.1`, and IPv6 `::1` SANs are
 supported. Any validation failure aborts startup; HTTPS never falls back to
 HTTP.
 
-Remote HTTPS additionally requires a concrete bind address, explicit opt-in,
-and an explicit transitional automation token. The certificate must cover the
-concrete address:
-
-```bash
-export OKF_HTTP_SESSION_TOKEN='replace-with-at-least-32-random-characters'
-okf-http --authenticated \
-  --host 192.0.2.10 --allow-remote \
-  --tls-cert /private/okf/server-chain.pem \
-  --tls-key /private/okf/server-key.pem \
-  8443
-```
-
-Unspecified addresses such as `0.0.0.0` and `::` are rejected because their
-identity cannot be represented by the URL and certificate check. In
-authenticated TLS mode the browser offers persistent account sign-in while
-ordinary document reading remains anonymous.
+Authenticated TLS is intended for local HTTPS and for the private
+proxy-to-OKF hop. `okf-http` should not be exposed directly on an intranet or
+the public Internet. Keep the OKF listener on loopback and publish the site
+through a reverse proxy instead. In authenticated TLS mode the browser offers
+persistent account sign-in while ordinary local document reading remains
+anonymous.
 
 Physical filesystem paths are omitted from API responses by default. Trusted
 local debugging can opt in explicitly by combining `--local-editor` with
@@ -310,13 +306,13 @@ change invalidate existing authority. Administrators can list users and revoke
 sessions through TLS-only capability-checked endpoints; account bootstrap and
 recovery remain available from the CLI.
 
-## Remote and Enterprise Deployment
+## Reverse-Proxy Deployment Boundary
 
-Direct remote binding remains an explicit authenticated-TLS deployment. The
-certificate SAN must cover the concrete bind address and `--allow-remote` is
-mandatory. Unlike local operation, remote document and graph reads require a
-persistent login; browser assets, health, and login bootstrap remain public.
-Document-root inspection and mutation are disabled remotely.
+For intranet and Internet deployment, keep the OKF backend on loopback. Expose
+only the reverse proxy to the network. This is the supported deployment model
+for OKF because it keeps filesystem-aware application logic away from public
+bind addresses while letting mature web infrastructure handle public TLS,
+firewall policy, compression, caching, and rate limiting.
 
 For a TLS-terminating enterprise reverse proxy, keep the OKF backend on
 loopback and TLS-enable both hops:
@@ -353,6 +349,29 @@ personal backend trust anchor, not an enterprise PKI. Managed environments
 should use administrator-provided certificates and browser trust policy.
 Neither setup requires modifying Markdown documents, and users without root
 rights can still run the loopback-only local modes.
+
+A minimal plain-HTTP lab proxy can forward to a loopback-only OKF backend while
+NGINX listens on the VM or host interface:
+
+```nginx
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:8003;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Use this only for a controlled VM or internal test network. Public and
+long-lived deployments should terminate HTTPS at the proxy and, where protected
+workflows are enabled, use the trusted-proxy mode described above.
 
 `/` redirects to `/docs-browser/index.html`. Browser assets are served only
 from the configured browser root; path traversal and symlink escapes are
