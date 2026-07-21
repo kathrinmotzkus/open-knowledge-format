@@ -73,3 +73,37 @@ jobs:
             dist/deb/okf-http_*.deb
             dist/deb/okf-http_*.deb.sha256
           if-no-files-found: error
+
+  publish-github-release:
+    name: Publish GitHub release assets
+    needs: okf-http-archives
+    if: startsWith(github.ref, 'refs/tags/okf-http-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download release artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: dist/release-assets
+      - name: Flatten release assets
+        run: |
+          mkdir -p dist/github-release
+          find dist/release-assets -type f -exec cp {} dist/github-release/ \;
+          find dist/github-release -maxdepth 1 -type f -print | sort
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release edit "$TAG_NAME" \
+              --title "okf-http ${TAG_NAME#okf-http-v}" \
+              --notes "Automated okf-http release artifacts for ${TAG_NAME}."
+          else
+            gh release create "$TAG_NAME" \
+              --title "okf-http ${TAG_NAME#okf-http-v}" \
+              --notes "Automated okf-http release artifacts for ${TAG_NAME}."
+          fi
+          gh release upload "$TAG_NAME" dist/github-release/* --clobber
