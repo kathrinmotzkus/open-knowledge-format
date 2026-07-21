@@ -90,17 +90,19 @@ jobs:
           git tag -f "$TAG_NAME" "$GITHUB_SHA"
           git push -f origin "refs/tags/${TAG_NAME}"
 
-          notes="Automated okf-http nightly Debian packages for ${GITHUB_SHA}.
+          cat >nightly-release-notes.md <<EOF
+          Automated okf-http nightly Debian packages for ${GITHUB_SHA}.
 
-These assets are development builds and are not the stable installation path."
+          These assets are development builds and are not the stable installation path.
+          EOF
 
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release upload "$TAG_NAME" dist/nightly-release/* --clobber
-            gh release edit "$TAG_NAME" --title "okf-http nightly" --notes "$notes" --prerelease
+            gh release edit "$TAG_NAME" --title "okf-http nightly" --notes-file nightly-release-notes.md --prerelease
           else
             gh release create "$TAG_NAME" dist/nightly-release/* \
               --target "$GITHUB_SHA" \
               --title "okf-http nightly" \
-              --notes "$notes" \
+              --notes-file nightly-release-notes.md \
               --prerelease
           fi
