@@ -10,8 +10,8 @@ usage() {
     cat <<'EOF'
 usage: nightly/install-okf-http-nightly-deb.sh [--yes] [--download-only] [--tag <tag>]
 
-Install or download the latest okf-http nightly Debian package from GitHub
-Release assets.
+Install or download the latest okf-http nightly Debian package for Debian
+architecture amd64 / Linux x86_64 from GitHub Release assets.
 
 Options:
   --yes            Do not ask for interactive confirmation.
@@ -20,7 +20,8 @@ Options:
   --help           Show this help.
 
 Nightly packages are development builds. They are not the stable installation
-path and may contain unreleased changes.
+path and may contain unreleased changes. okf-http must be exposed to networks
+through a reverse proxy; direct non-loopback binding is intentionally rejected.
 EOF
 }
 
@@ -71,11 +72,12 @@ fi
 
 deb_arch=$(dpkg --print-architecture)
 case "$deb_arch" in
-    amd64|arm64)
+    amd64)
         ;;
     *)
-        echo "unsupported Debian architecture: $deb_arch" >&2
-        echo "supported architectures: amd64, arm64" >&2
+        echo "unsupported Debian architecture for this nightly comfort path: $deb_arch" >&2
+        echo "supported architecture: amd64 (Linux x86_64)" >&2
+        echo "use stable release artifacts or source builds for other architectures" >&2
         exit 1
         ;;
 esac
@@ -121,10 +123,11 @@ WARNING: You are about to install an okf-http nightly build.
 
 Repository: ${repo}
 Release tag: ${tag}
-Architecture: ${deb_arch}
+Architecture: ${deb_arch} / Linux x86_64
 Package: ${deb_file}
 
 Nightly builds may contain unreleased development changes.
+Use stable releases for production systems.
 EOF
 
 if [ "$assume_yes" = false ]; then
@@ -175,3 +178,8 @@ fi
 
 echo "installing ${deb_file}"
 $sudo_cmd apt install "${work_dir}/${deb_file}"
+
+echo "installed okf-http nightly package"
+if command -v okf-http >/dev/null 2>&1; then
+    okf-http --version || true
+fi

@@ -129,15 +129,26 @@ okf-http --version
 okf-http --install-browser
 ```
 
-For frequent development updates, do not repeat the stable release download
-commands by hand. Use the separate nightly tooling instead:
+For frequent Debian x86_64 development updates, do not repeat the stable
+release download commands by hand. Use the separate nightly tooling instead:
 
 ```bash
 nightly/install-okf-http-nightly-deb.sh
 ```
 
+On a Debian system without a source checkout, download the installer script
+first and run it from `/tmp`:
+
+```bash
+wget -O /tmp/install-okf-http-nightly-deb.sh \
+  https://raw.githubusercontent.com/kathrinmotzkus/open-knowledge-format/main/nightly/install-okf-http-nightly-deb.sh
+sh /tmp/install-okf-http-nightly-deb.sh
+```
+
 Nightly builds are development builds from the mutable `okf-http-nightly`
-prerelease. See [`nightly/README.md`](nightly/README.md) before using them.
+prerelease. They are currently documented as a convenience path for Linux
+x86_64/`amd64` test systems. See [`nightly/README.md`](nightly/README.md)
+before using them.
 
 From a GitHub source checkout, run the installer as your regular user:
 

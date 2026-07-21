@@ -92,15 +92,25 @@ okf-http --version
 okf-http --install-browser
 ```
 
-For frequent development testing, use the separate nightly installer from a
-trusted source checkout:
+For frequent development testing on Debian-compatible Linux x86_64 systems,
+use the separate nightly installer from a trusted source checkout:
 
 ```bash
 nightly/install-okf-http-nightly-deb.sh
 ```
 
-Nightly packages are mutable development builds and are not the stable
-installation path.
+On a Debian system without a checkout, download the installer script first:
+
+```bash
+wget -O /tmp/install-okf-http-nightly-deb.sh \
+  https://raw.githubusercontent.com/kathrinmotzkus/open-knowledge-format/main/nightly/install-okf-http-nightly-deb.sh
+sh /tmp/install-okf-http-nightly-deb.sh
+```
+
+Nightly packages are mutable development builds for the `amd64` Debian
+architecture. They are not the stable installation path, but they avoid manual
+repetition of the release download/checksum/install commands while OKF is still
+moving quickly.
 
 From a GitHub source checkout, use the repository installer from the repository
 root:

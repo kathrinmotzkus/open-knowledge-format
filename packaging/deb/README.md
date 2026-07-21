@@ -70,10 +70,24 @@ sha256sum -c "okf-http_${version}_${arch}.deb.sha256"
 sudo apt install "./okf-http_${version}_${arch}.deb"
 ```
 
-These commands install a stable release asset. For frequent development testing
-from mutable nightly assets, use
-[`../../nightly/install-okf-http-nightly-deb.sh`](../../nightly/install-okf-http-nightly-deb.sh)
-instead.
+These commands install a stable release asset. For frequent Debian x86_64
+nightly testing from mutable development assets, use the dedicated convenience
+script instead:
+
+```bash
+nightly/install-okf-http-nightly-deb.sh
+```
+
+On a Debian system without a checkout:
+
+```bash
+wget -O /tmp/install-okf-http-nightly-deb.sh \
+  https://raw.githubusercontent.com/kathrinmotzkus/open-knowledge-format/main/nightly/install-okf-http-nightly-deb.sh
+sh /tmp/install-okf-http-nightly-deb.sh
+```
+
+See [`../../nightly/README.md`](../../nightly/README.md). The nightly shortcut
+is currently scoped to Linux x86_64/`amd64`.
 
 Then verify:
 
