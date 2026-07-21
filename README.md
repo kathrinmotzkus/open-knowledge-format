@@ -129,6 +129,16 @@ okf-http --version
 okf-http --install-browser
 ```
 
+For frequent development updates, do not repeat the stable release download
+commands by hand. Use the separate nightly tooling instead:
+
+```bash
+nightly/install-okf-http-nightly-deb.sh
+```
+
+Nightly builds are development builds from the mutable `okf-http-nightly`
+prerelease. See [`nightly/README.md`](nightly/README.md) before using them.
+
 From a GitHub source checkout, run the installer as your regular user:
 
 ```bash

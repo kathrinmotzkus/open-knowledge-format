@@ -92,6 +92,16 @@ okf-http --version
 okf-http --install-browser
 ```
 
+For frequent development testing, use the separate nightly installer from a
+trusted source checkout:
+
+```bash
+nightly/install-okf-http-nightly-deb.sh
+```
+
+Nightly packages are mutable development builds and are not the stable
+installation path.
+
 From a GitHub source checkout, use the repository installer from the repository
 root:
 

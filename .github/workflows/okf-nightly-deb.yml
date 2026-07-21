@@ -1,0 +1,92 @@
+name: OKF Nightly Debian Packages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  OKF_VOYAGE_API_KEY: ""
+  OKF_HTTP_TRUSTED_PROXY_TOKEN: ""
+
+jobs:
+  build-nightly-deb:
+    name: Nightly Debian package (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux x86_64
+            target: x86_64-unknown-linux-gnu
+          - platform: Linux aarch64
+            target: aarch64-unknown-linux-gnu
+    env:
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+      CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+      AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Install Linux aarch64 cross toolchain
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Cache dependencies for release build
+        run: cargo fetch --locked
+      - name: Build Debian package
+        run: scripts/package-okf-http-deb.sh ${{ matrix.target }}
+      - name: Upload nightly Debian package
+        uses: actions/upload-artifact@v7
+        with:
+          name: okf-http-nightly-deb-${{ matrix.target }}
+          path: |
+            dist/deb/okf-http_*.deb
+            dist/deb/okf-http_*.deb.sha256
+          if-no-files-found: error
+
+  publish-nightly-release:
+    name: Publish nightly prerelease assets
+    needs: build-nightly-deb
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download nightly package artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: dist/nightly-artifacts
+      - name: Flatten nightly assets
+        run: |
+          mkdir -p dist/nightly-release
+          find dist/nightly-artifacts -type f -exec cp {} dist/nightly-release/ \;
+          find dist/nightly-release -maxdepth 1 -type f -print | sort
+      - name: Publish mutable nightly prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: okf-http-nightly
+        run: |
+          git tag -f "$TAG_NAME" "$GITHUB_SHA"
+          git push -f origin "refs/tags/${TAG_NAME}"
+
+          notes="Automated okf-http nightly Debian packages for ${GITHUB_SHA}.
+
+These assets are development builds and are not the stable installation path."
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" dist/nightly-release/* --clobber
+            gh release edit "$TAG_NAME" --title "okf-http nightly" --notes "$notes" --prerelease
+          else
+            gh release create "$TAG_NAME" dist/nightly-release/* \
+              --target "$GITHUB_SHA" \
+              --title "okf-http nightly" \
+              --notes "$notes" \
+              --prerelease
+          fi

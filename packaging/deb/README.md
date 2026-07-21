@@ -70,6 +70,11 @@ sha256sum -c "okf-http_${version}_${arch}.deb.sha256"
 sudo apt install "./okf-http_${version}_${arch}.deb"
 ```
 
+These commands install a stable release asset. For frequent development testing
+from mutable nightly assets, use
+[`../../nightly/install-okf-http-nightly-deb.sh`](../../nightly/install-okf-http-nightly-deb.sh)
+instead.
+
 Then verify:
 
 ```bash
