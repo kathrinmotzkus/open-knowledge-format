@@ -2,6 +2,10 @@ name: OKF Nightly Debian Packages
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/okf-nightly-deb.yml"
+      - "nightly/**"
 
 permissions:
   contents: read
@@ -12,8 +16,17 @@ env:
   OKF_HTTP_TRUSTED_PROXY_TOKEN: ""
 
 jobs:
+  validate-nightly-tooling:
+    name: Validate nightly tooling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check nightly installer syntax
+        run: sh -n nightly/install-okf-http-nightly-deb.sh
+
   build-nightly-deb:
     name: Nightly Debian package (${{ matrix.platform }})
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -54,6 +67,7 @@ jobs:
   publish-nightly-release:
     name: Publish nightly prerelease assets
     needs: build-nightly-deb
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
