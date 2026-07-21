@@ -74,8 +74,8 @@ examples still need separate review.
 Source builds for the `okf-open-knowledge-format` library require Rust 1.85 or
 newer. Source builds and `cargo install` for `okf-http` require Rust 1.88 or
 newer because the HTTP server includes TLS and certificate handling
-dependencies. Future prebuilt `okf-http` release artifacts should not require
-Rust on the target system.
+dependencies. Prebuilt `okf-http` release artifacts do not require Rust on the
+target system.
 See
 [`OKF Platform Support`](crates/okf/docs/knowledge/references/platform-support.md)
 for the current support matrix.
@@ -111,6 +111,21 @@ okf-http 8003
 
 Then open `http://127.0.0.1:8003/docs-browser/index.html`.
 
+On Debian-compatible Linux systems, users who do not want to install Rust can
+install the prebuilt package from GitHub Releases. Choose `amd64` for Linux
+x86_64 or `arm64` for Linux aarch64:
+
+```bash
+version=0.4.3
+arch=amd64
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb"
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb.sha256"
+sha256sum -c "okf-http_${version}_${arch}.deb.sha256"
+sudo apt install "./okf-http_${version}_${arch}.deb"
+okf-http --version
+okf-http --install-browser
+```
+
 From a GitHub source checkout, run the installer as your regular user:
 
 ```bash
@@ -130,8 +145,8 @@ assets with:
 okf-http --install-browser
 ```
 
-For early Linux package testing, a local `.deb` package can be built from the
-source checkout:
+For local Linux package development, a `.deb` package can also be built from
+the source checkout:
 
 ```bash
 scripts/package-okf-http-deb.sh x86_64-unknown-linux-gnu

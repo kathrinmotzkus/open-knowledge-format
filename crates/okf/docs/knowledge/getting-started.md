@@ -4,7 +4,7 @@ type: Guide
 kind: knowledge-document
 topic: okf
 status: active
-updated: 2026-07-15
+updated: 2026-07-21
 tags: [okf, installation, browser, voyage-ai, quickstart]
 ---
 
@@ -74,8 +74,23 @@ okf-http --install-browser
 binary. This path requires Rust 1.88 or newer because it builds the HTTP
 server, including TLS and certificate handling dependencies, from crates.io.
 The core `okf-open-knowledge-format` library itself supports Rust 1.85 or
-newer. Future release archives and packages should not require Rust on the
+newer. Prebuilt release archives and packages do not require Rust on the
 target system.
+
+On Debian-compatible Linux systems, users who do not want to install Rust can
+install `okf-http` from GitHub Releases. Use `amd64` for Linux x86_64 and
+`arm64` for Linux aarch64:
+
+```bash
+version=0.4.3
+arch=amd64
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb"
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb.sha256"
+sha256sum -c "okf-http_${version}_${arch}.deb.sha256"
+sudo apt install "./okf-http_${version}_${arch}.deb"
+okf-http --version
+okf-http --install-browser
+```
 
 From a GitHub source checkout, use the repository installer from the repository
 root:

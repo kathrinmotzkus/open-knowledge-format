@@ -351,7 +351,7 @@ Neither setup requires modifying Markdown documents, and users without root
 rights can still run the loopback-only local modes.
 
 A minimal plain-HTTP lab proxy can forward to a loopback-only OKF backend while
-NGINX listens on the VM or host interface:
+NGINX listens on the server or network interface:
 
 ```nginx
 server {
@@ -369,7 +369,7 @@ server {
 }
 ```
 
-Use this only for a controlled VM or internal test network. Public and
+Use this only for a controlled lab or internal test network. Public and
 long-lived deployments should terminate HTTPS at the proxy and, where protected
 workflows are enabled, use the trusted-proxy mode described above.
 

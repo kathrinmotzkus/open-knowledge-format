@@ -204,8 +204,13 @@ Implementation status:
 - It builds `okf-http` release archives for the supported target baseline and
   uploads each `.tar.gz` together with a `.sha256` checksum.
 - The archive builder is `scripts/package-okf-http-release.sh`.
-- The workflow does not publish artifacts to a GitHub Release yet; uploaded
-  workflow artifacts remain intended for release-candidate inspection.
+- On `okf-http-v*` tags, the workflow creates a GitHub Release and attaches
+  the generated release archives and Debian packages directly to that release.
+- Manually triggered workflow artifacts remain intended for release-candidate
+  inspection before a final tag is created.
+- crates.io publication remains a separate manual step and must happen only
+  after required GitHub tests and release gates have completed successfully
+  for the exact commit being released.
 
 ## Phase 5: Prepare Debian Packaging
 
@@ -305,7 +310,10 @@ the first implementation round for CI, release artifacts, and packaging.
 - OKF should support both manual and tag-based artifact builds.
 - Manually triggered workflows build artifacts for release candidates and test
   runs.
-- Real release tags automatically build reproducible release artifacts.
+- Real release tags automatically build reproducible release artifacts and
+  publish them as GitHub Release assets.
+- crates.io publishing is intentionally not automated by the artifact workflow.
+  It happens only after the required GitHub tests and release gates are green.
 
 Rationale:
 

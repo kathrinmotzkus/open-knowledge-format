@@ -4,7 +4,7 @@ type: Checklist
 kind: knowledge-reference
 topic: okf-release
 status: active
-updated: 2026-07-18
+updated: 2026-07-21
 tags: [okf, release, ci, security, packaging]
 ---
 
@@ -12,7 +12,7 @@ tags: [okf, release, ci, security, packaging]
 
 This checklist covers source and binary community releases of
 `okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.2`
-and `okf-http 0.4.2` are the current prepared release versions. The library
+and `okf-http 0.4.3` are the current prepared release versions. The library
 package exports the Rust crate name `okf`.
 
 ## Clean Source
@@ -64,6 +64,9 @@ does not depend on the unmaintained `rustls-pemfile` crate.
 - [ ] GitHub Actions passes on Linux and macOS stable Rust.
 - [ ] The CI release-gate job passes with an empty
       `OKF_VOYAGE_API_KEY` and Cargo offline after dependency fetch.
+- [ ] Before publishing any package to crates.io, all required GitHub test and
+      release-gate jobs for the exact commit being released have completed
+      successfully.
 
 ## Package Contents
 

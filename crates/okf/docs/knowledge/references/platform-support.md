@@ -3,7 +3,7 @@ title: OKF Platform Support
 type: Reference
 status: active
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-21
 ---
 
 # OKF Platform Support
@@ -52,9 +52,9 @@ Source builds for `okf-open-knowledge-format` require Rust 1.85 or newer.
 Source builds and `cargo install` for `okf-http` require Rust 1.88 or newer
 because the HTTP server includes TLS and certificate handling dependencies.
 
-Future release artifacts for `okf-http` should not require Rust on the target
-system. They should allow users to install or run `okf-http` from prebuilt
-archives or packages.
+Release artifacts for `okf-http` do not require Rust on the target system.
+They allow users to install or run `okf-http` from prebuilt archives or
+packages.
 
 ## Current CI Coverage
 

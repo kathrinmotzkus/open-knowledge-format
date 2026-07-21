@@ -3,17 +3,16 @@ title: OKF Debian Packaging
 type: Reference
 status: draft
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-21
 ---
 
 # OKF Debian Packaging
 
-This directory contains the first local `.deb` packaging structure for
-`okf-http`.
+This directory contains the Debian `.deb` packaging structure for `okf-http`.
 
-It is intentionally small and reviewable. It prepares the project for VM tests
-and later `cargo-dist` evaluation without requiring a Rust toolchain on the
-target system.
+It is intentionally small and reviewable. It prepares installable Linux
+packages and later `cargo-dist` or APT repository evaluation without requiring
+a Rust toolchain on the target system.
 
 ## Current Scope
 
@@ -56,22 +55,40 @@ binary exists:
 scripts/package-okf-http-deb.sh aarch64-unknown-linux-gnu
 ```
 
-## Install on a Test VM
+## Install from GitHub Releases
 
-Copy the `.deb` to the VM and install it there:
+For Debian-compatible Linux systems, download the package and checksum from
+the matching GitHub Release. Use `amd64` for Linux x86_64 and `arm64` for Linux
+aarch64:
 
 ```bash
-sudo apt install ./okf-http_<version>_<arch>.deb
+version=0.4.3
+arch=amd64
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb"
+wget "https://github.com/kathrinmotzkus/open-knowledge-format/releases/download/okf-http-v${version}/okf-http_${version}_${arch}.deb.sha256"
+sha256sum -c "okf-http_${version}_${arch}.deb.sha256"
+sudo apt install "./okf-http_${version}_${arch}.deb"
 ```
 
 Then verify:
 
 ```bash
 command -v okf-http
-okf-http --help
+okf-http --version
 cat /usr/share/doc/okf-http/VERSION
 ls /usr/share/okf/browser
 ```
 
 Service examples are installed as examples only. They are not enabled
 automatically.
+
+## Install a Locally Built Package
+
+Install a package built from the current checkout with:
+
+```bash
+sudo apt install ./dist/deb/okf-http_<version>_<arch>.deb
+okf-http --version
+cat /usr/share/doc/okf-http/VERSION
+ls /usr/share/okf/browser
+```

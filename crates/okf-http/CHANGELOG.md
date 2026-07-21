@@ -8,6 +8,21 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+## [0.4.3] - 2026-07-21
+
+### Added
+
+- Added GitHub Release automation for `okf-http-v*` tags. Release archives
+  and Debian packages are now attached directly to the GitHub Release after
+  successful artifact builds.
+
+### Changed
+
+- Clarified Debian package installation from GitHub Releases for users who do
+  not have or do not want a Rust toolchain on the target system.
+- Updated release documentation to require successful GitHub test runs before
+  publishing to crates.io.
+
 ## [0.4.2] - 2026-07-21
 
 ### Security
