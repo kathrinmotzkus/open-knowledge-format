@@ -19,8 +19,19 @@ fn run_action(values: &[&str]) -> okf_http::ServerConfig {
         CliAction::Tls(_) => panic!("expected run action"),
         CliAction::User(_) => panic!("expected run action"),
         CliAction::ImportEnvRoots(_) => panic!("expected run action"),
+        CliAction::Version => panic!("expected run action"),
         CliAction::Help => panic!("expected run action"),
     }
+}
+
+#[test]
+fn parses_version_without_configuration_or_port() {
+    let action =
+        parse_cli_with_sources(os_args(&["--version"]), None, None, None, None).expect("version");
+    assert_eq!(action, CliAction::Version);
+    assert!(
+        parse_cli_with_sources(os_args(&["--version", "8003"]), None, None, None, None).is_err()
+    );
 }
 
 #[test]
@@ -629,6 +640,7 @@ fn help_text_documents_host_port_roots_and_env_policy() {
     assert!(help.contains("--allow-remote"));
     assert!(help.contains("--session-token"));
     assert!(help.contains("--expose-physical-paths"));
+    assert!(help.contains("--version"));
     assert!(help.contains(SESSION_TOKEN_ENV_KEY));
     assert!(help.contains(ROOTS_ENV_KEY));
     assert!(help.contains(BROWSER_ROOT_ENV_KEY));

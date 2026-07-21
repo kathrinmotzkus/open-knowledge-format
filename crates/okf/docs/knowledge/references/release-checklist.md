@@ -12,7 +12,7 @@ tags: [okf, release, ci, security, packaging]
 
 This checklist covers source and binary community releases of
 `okf-open-knowledge-format` and `okf-http`. `okf-open-knowledge-format 0.3.2`
-and `okf-http 0.4.0` are the current prepared release versions. The library
+and `okf-http 0.4.1` are the current prepared release versions. The library
 package exports the Rust crate name `okf`.
 
 ## Clean Source

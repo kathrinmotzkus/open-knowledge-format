@@ -8,6 +8,14 @@ pre-1.0 period, a minor release may contain breaking changes.
 
 ## Unreleased
 
+## [0.4.1] - 2026-07-21
+
+### Fixed
+
+- Added `okf-http --version` so packaged headless installations can verify the
+  installed binary directly without starting a server or requiring browser
+  assets.
+
 ## [0.4.0] - 2026-07-18
 
 This release raises the `okf-http` minimum supported Rust version to 1.88 so

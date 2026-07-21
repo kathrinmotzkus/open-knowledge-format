@@ -265,6 +265,7 @@ pub enum CliAction {
     Tls(LocalTlsCommand),
     User(UserCommand),
     ImportEnvRoots(PathBuf),
+    Version,
     Help,
 }
 
@@ -490,6 +491,9 @@ fn parse_cli_internal(
         config_file,
     } = sources;
     let args = args.into_iter().collect::<Vec<_>>();
+    if args.len() == 1 && args[0] == OsStr::new("--version") {
+        return Ok(CliAction::Version);
+    }
     if args
         .first()
         .is_some_and(|argument| argument == OsStr::new("tls"))
@@ -797,6 +801,9 @@ fn parse_raw_args(args: impl IntoIterator<Item = OsString>) -> Result<Option<Raw
     while let Some(arg) = args.next() {
         if arg == OsStr::new("-h") || arg == OsStr::new("--help") {
             return Ok(None);
+        }
+        if arg == OsStr::new("--version") {
+            return Err(CliError::new("--version does not accept other arguments"));
         }
 
         if arg == OsStr::new("--install-browser") {
@@ -1265,6 +1272,7 @@ Options:\n\
   --public-origin <url>   Exact external HTTPS origin used only with --trusted-proxy, for example https://knowledge.example.\n\
   --session-token <token> Set the API session token. Prefer OKF_HTTP_SESSION_TOKEN to avoid process-list exposure.\n\
   --expose-physical-paths Include local filesystem paths in API responses for trusted debugging. Requires --local-editor.\n\
+  --version              Show the okf-http package version.\n\
   -h, --help              Show this help text.\n\
 \n\
 Browser root:\n\

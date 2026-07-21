@@ -28,6 +28,10 @@ async fn main() -> ExitCode {
             print!("{}", help_text());
             ExitCode::SUCCESS
         }
+        CliAction::Version => {
+            println!("okf-http {}", env!("CARGO_PKG_VERSION"));
+            ExitCode::SUCCESS
+        }
         CliAction::InstallBrowser(config) => match install_browser_assets(&config) {
             Ok(report) => {
                 if report.changed {
