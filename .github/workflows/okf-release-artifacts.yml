@@ -92,18 +92,16 @@ jobs:
           mkdir -p dist/github-release
           find dist/release-assets -type f -exec cp {} dist/github-release/ \;
           find dist/github-release -maxdepth 1 -type f -print | sort
-      - name: Create or update GitHub release
+      - name: Create GitHub release with assets
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release edit "$TAG_NAME" \
-              --title "okf-http ${TAG_NAME#okf-http-v}" \
-              --notes "Automated okf-http release artifacts for ${TAG_NAME}."
-          else
-            gh release create "$TAG_NAME" \
-              --title "okf-http ${TAG_NAME#okf-http-v}" \
-              --notes "Automated okf-http release artifacts for ${TAG_NAME}."
+            echo "Release $TAG_NAME already exists. Immutable GitHub releases cannot be updated in place."
+            exit 1
           fi
-          gh release upload "$TAG_NAME" dist/github-release/* --clobber
+          gh release create "$TAG_NAME" dist/github-release/* \
+            --verify-tag \
+            --title "okf-http ${TAG_NAME#okf-http-v}" \
+            --notes "Automated okf-http release artifacts for ${TAG_NAME}."
