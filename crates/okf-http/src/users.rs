@@ -1,4 +1,3 @@
-use std::env;
 use std::fs::{self, OpenOptions};
 use std::path::{Path, PathBuf};
 use std::thread;
@@ -54,13 +53,7 @@ pub struct UserStore {
 
 impl UserStore {
     pub fn from_environment() -> Result<Self, String> {
-        let state_home = env::var_os("XDG_STATE_HOME")
-            .map(PathBuf::from)
-            .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/state")))
-            .ok_or_else(|| {
-                "cannot determine private state directory: set XDG_STATE_HOME or HOME".to_string()
-            })?;
-        Self::open(state_home.join("okf/auth.sqlite"))
+        Self::open(crate::platform::auth_database()?)
     }
 
     pub fn open(database: impl Into<PathBuf>) -> Result<Self, String> {
@@ -697,7 +690,7 @@ mod tests {
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
                 .as_nanos();
-            let root = env::temp_dir().join(format!("okf-users-{unique}"));
+            let root = std::env::temp_dir().join(format!("okf-users-{unique}"));
             let store = UserStore::open(root.join("okf/auth.sqlite")).expect("open user store");
             Self { root, store }
         }
@@ -876,7 +869,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root = env::temp_dir().join(format!("okf-users-security-{unique}"));
+        let root = std::env::temp_dir().join(format!("okf-users-security-{unique}"));
         let target = root.join("target");
         let linked = root.join("linked");
         fs::create_dir_all(&target).unwrap();

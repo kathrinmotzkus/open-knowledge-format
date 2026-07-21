@@ -75,9 +75,10 @@ does not depend on the unmaintained `rustls-pemfile` crate.
       `--locked --no-verify`, and `cargo publish -p
       okf-open-knowledge-format --dry-run --locked` passes before publication.
 - [ ] `okf-http` has a versioned `okf-open-knowledge-format` dependency
-      aliased as `okf`, and its complete package list passes. Building its
-      registry archive is now possible because `okf-open-knowledge-format
-      0.3.0` is published.
+      aliased as `okf`.
+- [ ] Platform-specific `okf-http` modules are included in the `okf-http`
+      package list; no separate platform packages are published for this
+      internal code.
 - [ ] Both package lists contain their license, README, and changelog.
 - [ ] `okf-open-knowledge-format` contains its documentation, contribution
       guide, security policy, versioning roadmap, library sources, and offline

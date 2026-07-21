@@ -15,8 +15,148 @@ env:
   OKF_REQUIRE_SOCKET_E2E: "1"
 
 jobs:
+  detect-changes:
+    name: Detect affected platforms
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.detect.outputs.full }}
+      rust: ${{ steps.detect.outputs.rust }}
+      okf: ${{ steps.detect.outputs.okf }}
+      okf_http: ${{ steps.detect.outputs.okf_http }}
+      linux_x86_64: ${{ steps.detect.outputs.linux_x86_64 }}
+      linux_aarch64: ${{ steps.detect.outputs.linux_aarch64 }}
+      macos_x86_64: ${{ steps.detect.outputs.macos_x86_64 }}
+      macos_aarch64: ${{ steps.detect.outputs.macos_aarch64 }}
+      release_infra: ${{ steps.detect.outputs.release_infra }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Detect changed areas
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          full=false
+          rust=false
+          okf=false
+          okf_http=false
+          linux_x86_64=false
+          linux_aarch64=false
+          macos_x86_64=false
+          macos_aarch64=false
+          release_infra=false
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" || "${GITHUB_REF}" == refs/tags/* ]]; then
+            full=true
+          fi
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "${GITHUB_BASE_REF}"
+            range="origin/${GITHUB_BASE_REF}...HEAD"
+          elif [[ "${{ github.event.before }}" =~ ^0+$ ]]; then
+            range="HEAD~1..HEAD"
+          else
+            range="${{ github.event.before }}..HEAD"
+          fi
+
+          changed="$(git diff --name-only "$range" || true)"
+          if [[ -z "$changed" ]]; then
+            full=true
+          fi
+
+          while IFS= read -r path; do
+            [[ -z "$path" ]] && continue
+            case "$path" in
+              .github/workflows/*|Cargo.toml|Cargo.lock|install.sh|scripts/*)
+                full=true
+                release_infra=true
+                ;;
+              packaging/deb/*|packaging/systemd/*)
+                linux_x86_64=true
+                linux_aarch64=true
+                release_infra=true
+                ;;
+              packaging/*)
+                release_infra=true
+                ;;
+              crates/okf-http/src/platform/linux.rs)
+                rust=true
+                linux_x86_64=true
+                linux_aarch64=true
+                ;;
+              crates/okf-http/src/platform/macos.rs)
+                rust=true
+                macos_x86_64=true
+                macos_aarch64=true
+                ;;
+              crates/okf-http/src/platform/mod.rs|crates/okf-http/src/platform/fallback.rs)
+                rust=true
+                linux_x86_64=true
+                linux_aarch64=true
+                macos_x86_64=true
+                macos_aarch64=true
+                ;;
+              crates/okf-http/*|crates/okf-http/**|docs-browser/*|docs-browser/**)
+                rust=true
+                okf_http=true
+                linux_x86_64=true
+                ;;
+              crates/okf/*|crates/okf/**)
+                rust=true
+                okf=true
+                linux_x86_64=true
+                ;;
+            esac
+          done <<< "$changed"
+
+          if [[ "$full" == "true" ]]; then
+            rust=true
+            okf=true
+            okf_http=true
+            linux_x86_64=true
+            linux_aarch64=true
+            macos_x86_64=true
+            macos_aarch64=true
+            release_infra=true
+          fi
+
+          {
+            echo "full=$full"
+            echo "rust=$rust"
+            echo "okf=$okf"
+            echo "okf_http=$okf_http"
+            echo "linux_x86_64=$linux_x86_64"
+            echo "linux_aarch64=$linux_aarch64"
+            echo "macos_x86_64=$macos_x86_64"
+            echo "macos_aarch64=$macos_aarch64"
+            echo "release_infra=$release_infra"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### OKF CI change detection"
+            echo
+            echo "- full matrix: $full"
+            echo "- rust: $rust"
+            echo "- okf: $okf"
+            echo "- okf-http: $okf_http"
+            echo "- Linux x86_64: $linux_x86_64"
+            echo "- Linux aarch64: $linux_aarch64"
+            echo "- macOS x86_64: $macos_x86_64"
+            echo "- macOS aarch64: $macos_aarch64"
+            echo "- release infrastructure: $release_infra"
+            echo
+            echo "Changed files:"
+            echo '```text'
+            printf '%s\n' "$changed"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   required-release-gates:
     name: Required release gates (Linux x86_64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rust == 'true' || needs.detect-changes.outputs.release_infra == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -32,19 +172,11 @@ jobs:
       - name: Run release gates without Voyage credentials
         run: scripts/check-okf-release.sh
 
-  required-workspace-tests:
-    name: Required workspace tests (${{ matrix.platform }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: Linux x86_64
-            os: ubuntu-latest
-          - platform: macOS x86_64
-            os: macos-15-intel
-          - platform: macOS aarch64
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
+  required-workspace-tests-linux:
+    name: Required workspace tests (Linux x86_64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.linux_x86_64 == 'true'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Install stable Rust
@@ -58,25 +190,63 @@ jobs:
           env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
             CARGO_NET_OFFLINE=true cargo test --workspace --locked
 
-  required-target-builds:
-    name: Required target build (${{ matrix.platform }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: Linux x86_64
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - platform: Linux aarch64
-            os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-          - platform: macOS x86_64
-            os: macos-15-intel
-            target: x86_64-apple-darwin
-          - platform: macOS aarch64
-            os: macos-latest
-            target: aarch64-apple-darwin
-    runs-on: ${{ matrix.os }}
+  required-workspace-tests-macos-x86_64:
+    name: Required workspace tests (macOS x86_64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.macos_x86_64 == 'true'
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for offline tests
+        run: cargo fetch --locked
+      - name: Test workspace offline and without provider credentials
+        run: |
+          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
+            CARGO_NET_OFFLINE=true cargo test --workspace --locked
+
+  required-workspace-tests-macos-aarch64:
+    name: Required workspace tests (macOS aarch64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.macos_aarch64 == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for offline tests
+        run: cargo fetch --locked
+      - name: Test workspace offline and without provider credentials
+        run: |
+          env -u OKF_VOYAGE_API_KEY -u VOYAGE_API_KEY -u OKF_HTTP_TRUSTED_PROXY_TOKEN \
+            CARGO_NET_OFFLINE=true cargo test --workspace --locked
+
+  required-target-build-linux-x86_64:
+    name: Required target build (Linux x86_64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.linux_x86_64 == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for target build
+        run: cargo fetch --locked
+      - name: Build supported target
+        run: scripts/check-okf-target-build.sh x86_64-unknown-linux-gnu
+
+  required-target-build-linux-aarch64:
+    name: Required target build (Linux aarch64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.linux_aarch64 == 'true'
+    runs-on: ubuntu-latest
     env:
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
       CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
@@ -88,34 +258,73 @@ jobs:
           rustup update stable --no-self-update
           rustup default stable
       - name: Install Linux aarch64 cross toolchain
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Cache dependencies for target build
         run: cargo fetch --locked
       - name: Build supported target
-        run: scripts/check-okf-target-build.sh ${{ matrix.target }}
+        run: scripts/check-okf-target-build.sh aarch64-unknown-linux-gnu
 
-  minimum-rust:
-    name: Required MSRV ${{ matrix.rust }} (${{ matrix.component }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - component: okf
-            rust: "1.85"
-          - component: okf-http
-            rust: "1.88"
+  required-target-build-macos-x86_64:
+    name: Required target build (macOS x86_64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.macos_x86_64 == 'true'
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for target build
+        run: cargo fetch --locked
+      - name: Build supported target
+        run: scripts/check-okf-target-build.sh x86_64-apple-darwin
+
+  required-target-build-macos-aarch64:
+    name: Required target build (macOS aarch64)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.macos_aarch64 == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Cache dependencies for target build
+        run: cargo fetch --locked
+      - name: Build supported target
+        run: scripts/check-okf-target-build.sh aarch64-apple-darwin
+
+  minimum-rust-okf:
+    name: Required MSRV 1.85 (okf)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.okf == 'true' || needs.detect-changes.outputs.full == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Install declared minimum Rust
-        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
+        run: rustup toolchain install 1.85 --profile minimal --no-self-update
       - name: Test copied standalone crates at MSRV
         env:
-          RUSTUP_TOOLCHAIN: ${{ matrix.rust }}
-        run: scripts/check-okf-msrv.sh ${{ matrix.component }}
+          RUSTUP_TOOLCHAIN: "1.85"
+        run: scripts/check-okf-msrv.sh okf
+
+  minimum-rust-okf-http:
+    name: Required MSRV 1.88 (okf-http)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.okf_http == 'true' || needs.detect-changes.outputs.linux_x86_64 == 'true' || needs.detect-changes.outputs.linux_aarch64 == 'true' || needs.detect-changes.outputs.macos_x86_64 == 'true' || needs.detect-changes.outputs.macos_aarch64 == 'true' || needs.detect-changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install declared minimum Rust
+        run: rustup toolchain install 1.88 --profile minimal --no-self-update
+      - name: Test copied standalone crates at MSRV
+        env:
+          RUSTUP_TOOLCHAIN: "1.88"
+        run: scripts/check-okf-msrv.sh okf-http
 
   experimental-windows:
     name: Optional experimental Windows test

@@ -36,6 +36,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap as Map;
 use zeroize::Zeroizing;
 
+#[doc(hidden)]
+pub mod platform;
+
 pub const BROWSER_ROOT_ENV_KEY: &str = "OKF_BROWSER_ROOT";
 pub const DEFAULT_HOST: &str = "127.0.0.1";
 pub const ROOTS_ENV_KEY: &str = "OKF_DOCUMENT_ROOTS";
@@ -1051,10 +1054,7 @@ fn configured_browser_root(
 }
 
 fn default_browser_root() -> PathBuf {
-    env::var_os("HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join("docs-browser")
+    platform::default_browser_root()
 }
 
 fn configured_root_state_dir(config_file: &Path) -> PathBuf {
@@ -1067,8 +1067,8 @@ fn configured_root_state_dir(config_file: &Path) -> PathBuf {
         if let Some(state) = env::var_os("XDG_STATE_HOME") {
             return PathBuf::from(state).join("okf");
         }
-        if let Some(home) = env::var_os("HOME") {
-            return PathBuf::from(home).join(".local/state/okf");
+        if let Some(state) = platform::private_state_root() {
+            return state.join("okf");
         }
     }
     config_file

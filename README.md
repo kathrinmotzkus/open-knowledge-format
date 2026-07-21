@@ -48,6 +48,9 @@ This repository contains the independently versioned OKF workspace.
   `okf`.
 - [`okf-http`](crates/okf-http/README.md) provides the local HTTP server,
   browser, protected editing workflows, and optional semantic-analysis APIs.
+  Platform-specific server integration lives in focused internal modules below
+  `crates/okf-http/src/platform/`; it is not published as separate crates.io
+  packages.
 - [`docs-browser`](docs-browser/README.md) contains the development copy of
   the browser assets embedded in `okf-http` releases.
 

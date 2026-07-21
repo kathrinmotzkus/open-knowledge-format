@@ -12,7 +12,13 @@ case "$component" in
         printf '%s\n' \
             '[workspace]' \
             'members = ["okf", "okf-http"]' \
-            'resolver = "2"' >"$work_dir/Cargo.toml"
+            'resolver = "2"' \
+            '' \
+            '[workspace.package]' \
+            'edition = "2021"' \
+            'rust-version = "1.85"' \
+            'license = "Apache-2.0"' \
+            'repository = "https://github.com/kathrinmotzkus/open-knowledge-format"' >"$work_dir/Cargo.toml"
         cp Cargo.lock "$work_dir/Cargo.lock"
         cargo fetch --locked --manifest-path "$work_dir/Cargo.toml"
         CARGO_NET_OFFLINE=true cargo test --offline --manifest-path "$work_dir/Cargo.toml" -p okf-open-knowledge-format
@@ -24,7 +30,13 @@ case "$component" in
         printf '%s\n' \
             '[workspace]' \
             'members = ["okf", "okf-http"]' \
-            'resolver = "2"' >"$work_dir/Cargo.toml"
+            'resolver = "2"' \
+            '' \
+            '[workspace.package]' \
+            'edition = "2021"' \
+            'rust-version = "1.85"' \
+            'license = "Apache-2.0"' \
+            'repository = "https://github.com/kathrinmotzkus/open-knowledge-format"' >"$work_dir/Cargo.toml"
         cp Cargo.lock "$work_dir/Cargo.lock"
         cargo fetch --locked --manifest-path "$work_dir/Cargo.toml"
         CARGO_NET_OFFLINE=true cargo test --offline --manifest-path "$work_dir/Cargo.toml" -p okf-http

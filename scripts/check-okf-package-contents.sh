@@ -26,7 +26,8 @@ done
 
 for entry in LICENSE README.md CHANGELOG.md src/main.rs browser/index.html browser/app.js \
     browser/security.js browser/styles.css browser/vendor/cytoscape.min.js \
-    src/monitoring.rs tests/browser_security.cjs tests/standalone_e2e.rs; do
+    src/monitoring.rs src/platform/mod.rs src/platform/linux.rs src/platform/macos.rs \
+    src/platform/fallback.rs tests/browser_security.cjs tests/standalone_e2e.rs; do
     require_entry "$work_dir/okf-http.list" "$entry"
 done
 

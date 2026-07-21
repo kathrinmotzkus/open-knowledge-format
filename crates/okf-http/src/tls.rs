@@ -1,4 +1,3 @@
-use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -37,13 +36,7 @@ pub struct LocalTlsPaths {
 
 impl LocalTlsPaths {
     pub fn from_environment() -> Result<Self, String> {
-        let state_home = env::var_os("XDG_STATE_HOME")
-            .map(PathBuf::from)
-            .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/state")))
-            .ok_or_else(|| {
-                "cannot determine private state directory: set XDG_STATE_HOME or HOME".to_string()
-            })?;
-        Ok(Self::new(state_home.join("okf/tls")))
+        Ok(Self::new(crate::platform::tls_dir()?))
     }
 
     pub fn new(directory: impl Into<PathBuf>) -> Self {

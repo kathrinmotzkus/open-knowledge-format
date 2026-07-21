@@ -335,10 +335,7 @@ struct SessionTokenFile {
 
 impl SessionTokenFile {
     fn create(port: u16, token: &str) -> io::Result<Self> {
-        let directory = env::var_os("XDG_RUNTIME_DIR")
-            .map(PathBuf::from)
-            .filter(|path| path.is_dir())
-            .unwrap_or_else(env::temp_dir);
+        let directory = okf_http::platform::runtime_root();
         let path = directory.join(format!("okf-http-{port}-{}.token", std::process::id()));
         let mut options = OpenOptions::new();
         options.write(true).create_new(true);

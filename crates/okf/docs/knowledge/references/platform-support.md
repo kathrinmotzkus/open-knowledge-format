@@ -58,7 +58,12 @@ packages.
 
 ## Current CI Coverage
 
-The current CI baseline covers:
+The current CI baseline is architecture-aware. It runs the smallest meaningful
+set of required jobs for ordinary changes and keeps the full platform matrix
+for release tags, manual full runs, lockfile changes, workflow changes, and
+release infrastructure changes.
+
+The baseline can cover:
 
 - release gates on Linux x86_64
 - workspace tests on Linux x86_64, macOS x86_64, and macOS aarch64
@@ -75,6 +80,18 @@ The current CI baseline covers:
 - release-candidate `okf-http` archives with SHA-256 checksums on manual
   workflow dispatch and `okf-http-v*` tags
 - local and CI-generated `.deb` packages for Linux x86_64 and Linux aarch64
+
+Ordinary `okf-open-knowledge-format`, `okf-http`, or browser changes start
+with Linux x86_64 as the fast required baseline. Platform-specific changes
+under `crates/okf-http/src/platform/` run only the affected platform-family
+jobs:
+
+- `linux.rs` changes affect Linux x86_64 and Linux aarch64.
+- `macos.rs` changes affect macOS x86_64 and macOS aarch64.
+- shared platform module changes affect all supported platform families.
+
+Release tags and central release-infrastructure changes still run the full
+supported platform matrix.
 
 Linux aarch64 target builds use cross-compilation first. Native Linux-aarch64
 tests are still expected later through a VM, runner, or hardware test path.

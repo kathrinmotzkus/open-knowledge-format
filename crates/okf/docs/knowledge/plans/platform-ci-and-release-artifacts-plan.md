@@ -1,9 +1,9 @@
 ---
 title: OKF Platform, CI, and Release Artifacts Plan
 type: Plan
-status: Draft
+status: Active
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-21
 ---
 
 # OKF Platform, CI, and Release Artifacts Plan
@@ -56,22 +56,21 @@ Platform and release work must keep OKF maintainable.
 
 - `lib.rs` should remain a public API entrypoint and module map, not the
   implementation home for every subsystem.
-- Platform-specific code should live in focused modules, for example:
+- Platform-specific code should live in focused files or modules. The current
+  internal `okf-http` split is:
 
 ```text
-crates/okf/src/
-  platform/
-    mod.rs
-    paths.rs
-    os.rs
-    diagnostics.rs
+crates/okf-http/src/platform/mod.rs
+  shared platform path model and dispatch
 
-crates/okf-http/src/
-  platform/
-    mod.rs
-    service.rs
-    install.rs
-    browser.rs
+crates/okf-http/src/platform/linux.rs
+  Linux/XDG filesystem defaults and runtime paths
+
+crates/okf-http/src/platform/macos.rs
+  macOS filesystem defaults and runtime paths
+
+crates/okf-http/src/platform/fallback.rs
+  conservative fallback behavior for not-yet-supported targets
 ```
 
 - CI scripts should live under `scripts/`.
@@ -93,6 +92,12 @@ Completion criteria:
 - New platform support does not inflate `lib.rs` with implementation details.
 - Platform-specific behavior has clear module boundaries.
 - CI and packaging logic is scriptable and reviewable outside Rust source files.
+
+Implementation status:
+
+- Implemented with internal modules under `crates/okf-http/src/platform/`.
+- This keeps `okf-http` publishable as a single crates.io package while still
+  avoiding platform-specific code in the main HTTP, TLS, and auth modules.
 
 ## Phase 1: Document Platform Support
 
@@ -146,6 +151,12 @@ Implementation status:
   architecture coverage explicit, installing `cargo-audit` before release
   gates, keeping provider-backed tests credential-free by default, and moving
   Windows behind manual `workflow_dispatch` as an optional experimental job.
+- Refined with architecture-aware change detection. Ordinary library,
+  `okf-http`, and browser changes start with Linux x86_64. Linux platform
+  module changes trigger Linux x86_64 and Linux aarch64. macOS platform module
+  changes trigger macOS x86_64 and macOS aarch64. Shared platform module,
+  lockfile, workflow, script, release-infrastructure, manual, and tag-triggered
+  runs use the full supported matrix.
 
 ## Phase 3: Add Targeted Platform Builds
 
@@ -167,7 +178,7 @@ Completion criteria:
 
 Implementation status:
 
-- Implemented in GitHub CI as `required-target-builds`.
+- Implemented in GitHub CI as separate target-build jobs per supported target.
 - Linux x86_64, macOS x86_64, and macOS aarch64 use native GitHub-hosted
   runners.
 - Linux aarch64 uses cross-compilation with the GNU aarch64 cross toolchain and
@@ -211,6 +222,8 @@ Implementation status:
 - crates.io publication remains a separate manual step and must happen only
   after required GitHub tests and release gates have completed successfully
   for the exact commit being released.
+- Platform-specific implementation remains internal to `okf-http`; no
+  additional crates.io packages are required for these platform modules.
 
 ## Phase 5: Prepare Debian Packaging
 
